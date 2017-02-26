@@ -1,0 +1,45 @@
+// Available variables which can be used inside of strings.
+// ${workspaceRoot}: the root folder of the team
+// ${file}: the current opened file
+// ${fileBasename}: the current opened file's basename
+// ${fileDirname}: the current opened file's dirname
+// ${fileExtname}: the current opened file's extension
+// ${cwd}: the current working directory of the spawned process
+
+// A task runner that calls a custom npm script that compiles the extension.
+{
+    "version": "0.1.0",
+    "_runner": "terminal",
+    "command": "npm",
+    "args": ["run"],
+    "isShellCommand": true,
+    "showOutput": "always",
+    "suppressTaskName": true,
+    // use the standard tsc in watch mode problem matcher to find compile problems in the output.
+    "tasks": [{
+        "taskName": "compile",
+        "args": ["compile", "--loglevel", "silent"],
+        "isBuildCommand": true,
+        "isBackground": true,
+        "problemMatcher": "$tsc-watch"
+    }, {
+        "taskName": "tslint",
+        "args": ["lint", "--loglevel", "silent"],
+        "isBackground": true,
+        "problemMatcher": {
+            "owner": "tslint",
+            "fileLocation": [
+                "relative",
+                "${workspaceRoot}"
+            ],
+            "severity": "warning",
+            "pattern": {
+                "regexp": "^(\\S.*)\\[(\\d+), (\\d+)\\]:\\s+(.*)$",
+                "file": 1,
+                "line": 2,
+                "column": 3,
+                "message": 4
+            }
+        }
+    }]
+}

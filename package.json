@@ -1,0 +1,123 @@
+{
+    "name": "restore-editors",
+    "version": "0.0.1",
+    "author": {
+        "name": "Eric Amodio",
+        "email": "eamodio@gmail.com"
+    },
+    "publisher": "eamodio",
+    "engines": {
+        "vscode": "^1.9.0"
+    },
+    "license": "SEE LICENSE IN LICENSE",
+    "displayName": "Restore Editors",
+    "description": "Quickly save and restore all of the open editors",
+    "categories": [
+        "Other"
+    ],
+    "keywords": [
+        "editors",
+        "documents",
+        "restore",
+        "save",
+        "files"
+    ],
+    "galleryBanner": {
+        "color": "#56098c",
+        "theme": "dark"
+    },
+    "icon": "images/icon.svg",
+    "preview": false,
+    "homepage": "https://github.com/eamodio/vscode-restore-editors/blob/master/README.md",
+    "bugs": {
+        "url": "https://github.com/eamodio/vscode-restore-editors/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/eamodio/vscode-restore-editors.git"
+    },
+    "main": "./out/src/extension",
+    "contributes": {
+        "configuration": {
+            "type": "object",
+            "title": "Restore Editors configuration",
+            "properties": {
+                "restoreEditors.advanced.debug": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Specifies debug mode"
+                },
+                "restoreEditors.advanced.output.level": {
+                    "type": "string",
+                    "default": "silent",
+                    "enum": [
+                        "silent",
+                        "errors",
+                        "verbose"
+                    ],
+                    "description": "Specifies how much (if any) output will be sent to the RestoreEditors output channel"
+                }
+            }
+        },
+        "commands": [
+            {
+                "command": "restoreEditors.reset",
+                "title": "Reset to Saved Document Editors"
+            },
+            {
+                "command": "restoreEditors.restore",
+                "title": "Restore Saved Document Editors"
+            },
+            {
+                "command": "restoreEditors.save",
+                "title": "Save Document Editors"
+            }
+        ],
+        "menus": {
+            "editor/title": [
+                {
+                    "command": "restoreEditors.save",
+                    "group": "1_restoreEditors@1"
+                },
+                {
+                    "command": "restoreEditors.restore",
+                    "group": "1_restoreEditors@2"
+                }
+             ]
+        },
+        "keybindings": [
+            {
+                "command": "restoreEditors.save",
+                "key": "alt+d",
+                "mac": "alt+d"
+            },
+            {
+                "command": "restoreEditors.restore",
+                "key": "alt+shift+d",
+                "mac": "alt+shift+d"
+            }
+        ]
+    },
+    "activationEvents": [
+        "*"
+    ],
+    "scripts": {
+        "compile": "tsc -watch -p ./",
+        "lint": "tslint --project tslint.json",
+        "pack": "git clean -xdf && npm install && vsce package",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "pub": "git clean -xdf --exclude=node_modules/ && npm install && vsce publish",
+        "vscode:prepublish": "tsc -p ./"
+    },
+    "dependencies": {
+        "lodash.isequal": "^4.5.0"
+    },
+    "devDependencies": {
+        "@types/node": "^7.0.5",
+        "@types/mocha": "^2.2.39",
+        "mocha": "^3.2.0",
+        "tslint": "^4.4.2",
+        "typescript": "^2.2.1",
+        "vscode": "^1.0.3"
+    }
+}
