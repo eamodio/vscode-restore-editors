@@ -1,9 +1,5 @@
 'use strict';
 
-export interface IStatusBarConfig {
-    enabled: boolean;
-}
-
 export type OutputLevel = 'silent' | 'errors' | 'verbose';
 export const OutputLevel = {
     Silent: 'silent' as OutputLevel,
@@ -19,6 +15,6 @@ export interface IAdvancedConfig {
 }
 
 export interface IConfig {
-    statusBar: IStatusBarConfig;
+    openPreview: boolean;
     advanced: IAdvancedConfig;
 }

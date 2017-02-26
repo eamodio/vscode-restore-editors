@@ -1,6 +1,10 @@
 'use strict';
 import { ExtensionContext } from 'vscode';
-import { ResetCommand, RestoreCommand, SaveCommand } from './commands';
+import { ClearCommand } from './commands/clear';
+import { OpenCommand } from './commands/open';
+import { RestoreCommand } from './commands/restore';
+import { SaveCommand } from './commands/save';
+import { ShowQuickEditorsCommand } from './commands/showQuickEditors';
 import DocumentManager from './documentManager';
 
 // this method is called when your extension is activated
@@ -8,9 +12,11 @@ export async function activate(context: ExtensionContext) {
     const documentManager = new DocumentManager(context);
     context.subscriptions.push(documentManager);
 
-    context.subscriptions.push(new ResetCommand(documentManager));
+    context.subscriptions.push(new ClearCommand(documentManager));
+    context.subscriptions.push(new OpenCommand(documentManager));
     context.subscriptions.push(new RestoreCommand(documentManager));
     context.subscriptions.push(new SaveCommand(documentManager));
+    context.subscriptions.push(new ShowQuickEditorsCommand(documentManager));
 }
 
 // this method is called when your extension is deactivated

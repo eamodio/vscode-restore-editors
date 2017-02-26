@@ -2,6 +2,7 @@
 import { commands, Disposable, ExtensionContext, TextEditor, window } from 'vscode';
 import { TextEditorComparer } from './comparers';
 import { ISavedEditor, SavedEditor } from './savedEditor';
+import { Logger } from './logger';
 
 export default class DocumentManager extends Disposable {
 
@@ -11,47 +12,68 @@ export default class DocumentManager extends Disposable {
 
     dispose() { }
 
-    async restore(reset: boolean = false) {
-        const editors = this.context.workspaceState.get<ISavedEditor[]>('restoreEditors:documents').map(_ => new SavedEditor(_));
-        if (!editors) return;
+    clear() {
+        this.context.workspaceState.update('restoreEditors:documents', undefined);
+    }
 
-        if (reset) {
-            // Close all opened documents
-            while (window.activeTextEditor) {
-                await commands.executeCommand('workbench.action.closeActiveEditor');
+    get(): SavedEditor[] {
+        const data = this.context.workspaceState.get<ISavedEditor[]>('restoreEditors:documents');
+        return (data && data.map(_ => new SavedEditor(_))) || [];
+    }
+
+    async open(restore: boolean = false) {
+        try {
+            const editors = this.get();
+            if (!editors.length) return;
+
+            if (restore) {
+                // Close all opened documents
+                while (window.activeTextEditor) {
+                    await commands.executeCommand('workbench.action.closeActiveEditor');
+                }
+            }
+
+            for (const editor of editors) {
+                await editor.open();
             }
         }
-
-        for (const editor of editors) {
-            await editor.open();
+        catch (ex) {
+            Logger.error('DocumentManager.restore', ex);
         }
     }
 
     async save() {
-        const active = window.activeTextEditor;
-        if (!active) return;
+        try {
+            const active = window.activeTextEditor;
+            //if (!active) return;
 
-        const editorTracker = new ActiveEditorTracker();
+            const editorTracker = new ActiveEditorTracker();
 
-        let editor = active;
-        const openEditors: TextEditor[] = [];
-        do {
-            openEditors.push(editor);
+            let editor = active;
+            const openEditors: TextEditor[] = [];
+            do {
+                openEditors.push(editor);
 
-            commands.executeCommand('workbench.action.nextEditor');
-            editor = await editorTracker.wait();
-        } while (!TextEditorComparer.equals(active, editor));
+                commands.executeCommand('workbench.action.nextEditor');
+                editor = await editorTracker.wait();
+            } while (!TextEditorComparer.equals(active, editor));
 
-        editorTracker.dispose();
+            editorTracker.dispose();
 
-        const editors = openEditors.filter(_ => _.document && _.viewColumn).map(_ => {
-            return {
-                uri: _.document.uri.toJSON(),
-                viewColumn: _.viewColumn
-            };
-        });
+            const editors = openEditors
+                .filter(_ => !!_ && !!_.document && !!_.viewColumn)
+                .map(_ => {
+                    return {
+                        uri: _.document.uri,
+                        viewColumn: _.viewColumn
+                    } as ISavedEditor;
+                });
 
-        this.context.workspaceState.update('restoreEditors:documents', editors);
+            this.context.workspaceState.update('restoreEditors:documents', editors);
+        }
+        catch (ex) {
+            Logger.error('DocumentManager.save', ex);
+        }
     }
 }
 

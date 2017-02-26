@@ -4,7 +4,7 @@ import { BuiltInCommands } from './constants';
 import { Logger } from './logger';
 
 export interface ISavedEditor {
-    uri: string;
+    uri: Uri;
     viewColumn: ViewColumn;
 }
 
@@ -21,7 +21,15 @@ export class SavedEditor {
             this.viewColumn = viewColumn;
         }
         else {
-            this.uri = Uri.parse(savedEditorOrUri.uri);
+            if (typeof savedEditorOrUri.uri === 'string') {
+                this.uri = Uri.parse(savedEditorOrUri.uri);
+            }
+            else if (savedEditorOrUri.uri instanceof Uri) {
+                this.uri = savedEditorOrUri.uri;
+            }
+            else {
+                this.uri = new Uri().with(savedEditorOrUri.uri);
+            }
             this.viewColumn = savedEditorOrUri.viewColumn;
         }
     }

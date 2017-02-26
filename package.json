@@ -27,7 +27,7 @@
         "theme": "dark"
     },
     "icon": "images/icon.svg",
-    "preview": false,
+    "preview": true,
     "homepage": "https://github.com/eamodio/vscode-restore-editors/blob/master/README.md",
     "bugs": {
         "url": "https://github.com/eamodio/vscode-restore-editors/issues"
@@ -42,6 +42,11 @@
             "type": "object",
             "title": "Restore Editors configuration",
             "properties": {
+                "restoreEditors.openPreview": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Specifies whether or not to open single editors in a preview tab"
+                },
                 "restoreEditors.advanced.debug": {
                     "type": "boolean",
                     "default": false,
@@ -61,40 +66,43 @@
         },
         "commands": [
             {
-                "command": "restoreEditors.reset",
-                "title": "Reset to Saved Document Editors"
+                "command": "restoreEditors.clear",
+                "title": "Clear Saved Editors"
+            },
+            {
+                "command": "restoreEditors.open",
+                "title": "Open Saved Editors"
             },
             {
                 "command": "restoreEditors.restore",
-                "title": "Restore Saved Document Editors"
+                "title": "Restore Only Saved Editors"
             },
             {
                 "command": "restoreEditors.save",
-                "title": "Save Document Editors"
+                "title": "Save Opened Editors"
+            },
+            {
+                "command": "restoreEditors.showQuickEditors",
+                "title": "Show Saved Editors"
             }
         ],
         "menus": {
             "editor/title": [
                 {
-                    "command": "restoreEditors.save",
-                    "group": "1_restoreEditors@1"
+                    "command": "restoreEditors.open",
+                    "group": "restoreEditors"
                 },
                 {
-                    "command": "restoreEditors.restore",
-                    "group": "1_restoreEditors@2"
+                    "command": "restoreEditors.save",
+                    "group": "restoreEditors"
                 }
              ]
         },
         "keybindings": [
             {
-                "command": "restoreEditors.save",
+                "command": "restoreEditors.showQuickEditors",
                 "key": "alt+d",
                 "mac": "alt+d"
-            },
-            {
-                "command": "restoreEditors.restore",
-                "key": "alt+shift+d",
-                "mac": "alt+shift+d"
             }
         ]
     },
