@@ -6,9 +6,12 @@ import { RestoreCommand } from './commands/restore';
 import { SaveCommand } from './commands/save';
 import { ShowQuickEditorsCommand } from './commands/showQuickEditors';
 import DocumentManager from './documentManager';
+import { Logger } from './logger';
 
 // this method is called when your extension is activated
 export async function activate(context: ExtensionContext) {
+    Logger.configure(context);
+
     const documentManager = new DocumentManager(context);
     context.subscriptions.push(documentManager);
 
