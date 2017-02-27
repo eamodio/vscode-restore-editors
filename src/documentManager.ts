@@ -28,9 +28,7 @@ export default class DocumentManager extends Disposable {
 
             if (restore) {
                 // Close all opened documents
-                while (window.activeTextEditor) {
-                    await commands.executeCommand('workbench.action.closeActiveEditor');
-                }
+                await commands.executeCommand('workbench.action.closeAllEditors');
             }
 
             for (const editor of editors) {
@@ -45,7 +43,6 @@ export default class DocumentManager extends Disposable {
     async save() {
         try {
             const active = window.activeTextEditor;
-            //if (!active) return;
 
             const editorTracker = new ActiveEditorTracker();
 
