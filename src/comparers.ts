@@ -27,11 +27,12 @@ class TextDocumentComparer extends Comparer<TextDocument> {
 
 class TextEditorComparer extends Comparer<TextEditor> {
 
-    equals(lhs: TextEditor, rhs: TextEditor) {
+    equals(lhs: TextEditor, rhs: TextEditor, usePosition: boolean = false) {
         if (!lhs && !rhs) return true;
         if ((lhs && !rhs) || (!lhs && rhs)) return false;
 
-        return textDocumentComparer.equals(lhs.document, rhs.document);
+        return (!usePosition || (lhs.viewColumn === rhs.viewColumn)) &&
+            textDocumentComparer.equals(lhs.document, rhs.document);
     }
 }
 

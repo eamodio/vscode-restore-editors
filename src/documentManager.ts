@@ -1,10 +1,11 @@
 'use strict';
 import { commands, Disposable, ExtensionContext, TextEditor, window } from 'vscode';
+import { ActiveEditorTracker } from './activeEditorTracker';
 import { TextEditorComparer } from './comparers';
 import { ISavedEditor, SavedEditor } from './savedEditor';
 import { Logger } from './logger';
 
-export default class DocumentManager extends Disposable {
+export class DocumentManager extends Disposable {
 
     constructor(private context: ExtensionContext) {
         super(() => this.dispose());
@@ -42,23 +43,30 @@ export default class DocumentManager extends Disposable {
 
     async save() {
         try {
-            const active = window.activeTextEditor;
+            let active = window.activeTextEditor;
 
             const editorTracker = new ActiveEditorTracker();
 
             let editor = active;
             const openEditors: TextEditor[] = [];
             do {
-                openEditors.push(editor);
+                if (editor) {
+                    // If we didn't start with a valid editor, set one once we find it
+                    if (!active) {
+                        active = editor;
+                    }
+
+                    openEditors.push(editor);
+                }
 
                 commands.executeCommand('workbench.action.nextEditor');
-                editor = await editorTracker.wait();
-            } while (!TextEditorComparer.equals(active, editor));
+                editor = await editorTracker.wait(500);
+            } while ((!active && !editor) || !TextEditorComparer.equals(active, editor, true));
 
             editorTracker.dispose();
 
             const editors = openEditors
-                .filter(_ => !!_ && !!_.document && !!_.viewColumn)
+                .filter(_ => _.document)
                 .map(_ => {
                     return {
                         uri: _.document.uri,
@@ -73,24 +81,3 @@ export default class DocumentManager extends Disposable {
         }
     }
 }
-
-class ActiveEditorTracker extends Disposable {
-
-    private _disposable: Disposable;
-    private _resolver: (value?: TextEditor | PromiseLike<TextEditor>) => void;
-
-    constructor() {
-        super(() => this.dispose());
-
-        this._disposable = window.onDidChangeActiveTextEditor(e => this._resolver(e));
-    }
-
-    dispose() {
-        this._disposable && this._disposable.dispose();
-    }
-
-    wait(): Promise<TextEditor> {
-        return new Promise<TextEditor>((resolve, reject) => this._resolver = resolve);
-    }
-}
-

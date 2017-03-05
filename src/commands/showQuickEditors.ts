@@ -2,7 +2,7 @@
 import { QuickPickOptions, window, workspace } from 'vscode';
 import { Command, CommandQuickPickItem, Commands, OpenFileCommandQuickPickItem } from '../commands';
 import { IConfig } from '../configuration';
-import DocumentManager from '../documentManager';
+import { DocumentManager } from '../documentManager';
 
 export class ShowQuickEditorsCommand extends Command {
 

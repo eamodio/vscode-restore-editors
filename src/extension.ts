@@ -5,7 +5,7 @@ import { OpenCommand } from './commands/open';
 import { RestoreCommand } from './commands/restore';
 import { SaveCommand } from './commands/save';
 import { ShowQuickEditorsCommand } from './commands/showQuickEditors';
-import DocumentManager from './documentManager';
+import { DocumentManager } from './documentManager';
 import { Logger } from './logger';
 
 // this method is called when your extension is activated

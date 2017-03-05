@@ -1,6 +1,6 @@
 'use strict';
 import { Command, Commands } from '../commands';
-import DocumentManager from '../documentManager';
+import { DocumentManager } from '../documentManager';
 
 export class ClearCommand extends Command {
 
