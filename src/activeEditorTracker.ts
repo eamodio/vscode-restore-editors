@@ -1,6 +1,6 @@
 
 'use strict';
-import { Disposable, TextEditor, window } from 'vscode';
+import { commands, Disposable, TextEditor, window } from 'vscode';
 
 export class ActiveEditorTracker extends Disposable {
 
@@ -15,6 +15,24 @@ export class ActiveEditorTracker extends Disposable {
 
     dispose() {
         this._disposable && this._disposable.dispose();
+    }
+
+    async awaitClose(timeout: number = 500): Promise<TextEditor> {
+        this.close();
+        return this.wait(timeout);
+    }
+
+    async awaitNext(timeout: number = 500): Promise<TextEditor> {
+        this.next();
+        return this.wait(timeout);
+    }
+
+    async close(): Promise<{}> {
+        return commands.executeCommand('workbench.action.closeActiveEditor');
+    }
+
+    async next(): Promise<{}> {
+        return commands.executeCommand('workbench.action.nextEditor');
     }
 
     async wait(timeout: number = 500): Promise<TextEditor> {

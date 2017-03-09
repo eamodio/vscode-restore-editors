@@ -1,5 +1,8 @@
 ## Release Notes
 
+### 0.0.5
+- Fixes intermittent issues with more robust editor tracking
+
 ### 0.0.4
 - Fixes issues where non-text editors could interfere with determining the open editors
 - Attempts to fix [#2](https://github.com/eamodio/vscode-restore-editors/issues/2) - Opened editors aren't always properly saved

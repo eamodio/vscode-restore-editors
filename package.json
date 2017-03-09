@@ -1,6 +1,6 @@
 {
     "name": "restore-editors",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "author": {
         "name": "Eric Amodio",
         "email": "eamodio@gmail.com"
@@ -121,10 +121,10 @@
     },
     "devDependencies": {
         "@types/mocha": "^2.2.39",
-        "@types/node": "^7.0.5",
+        "@types/node": "^7.0.7",
         "mocha": "^3.2.0",
-        "tslint": "^4.4.2",
+        "tslint": "^4.5.1",
         "typescript": "^2.2.1",
-        "vscode": "^1.0.3"
+        "vscode": "^1.0.5"
     }
 }

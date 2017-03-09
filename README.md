@@ -2,6 +2,8 @@
 
 Quickly save and restore all of the open editors.
 
+Editors are saved into a persisted per-folder "slot" for later retrieval. This basically means that saving the open editors for one opened folder, will not overwrite or interfere with saving/restoring/clearing editors in another opened folder.
+
 ![preview](https://raw.githubusercontent.com/eamodio/vscode-restore-editors/master/images/preview.gif)
 
 ## Features

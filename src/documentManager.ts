@@ -43,10 +43,9 @@ export class DocumentManager extends Disposable {
 
     async save() {
         try {
-            let active = window.activeTextEditor;
-
             const editorTracker = new ActiveEditorTracker();
 
+            let active = window.activeTextEditor;
             let editor = active;
             const openEditors: TextEditor[] = [];
             do {
@@ -59,9 +58,8 @@ export class DocumentManager extends Disposable {
                     openEditors.push(editor);
                 }
 
-                commands.executeCommand('workbench.action.nextEditor');
-                editor = await editorTracker.wait(500);
-            } while ((!active && !editor) || !TextEditorComparer.equals(active, editor, true));
+                editor = await editorTracker.awaitNext(500);
+            } while ((!active && !editor) || !TextEditorComparer.equals(active, editor, { useId: true, usePosition: true }));
 
             editorTracker.dispose();
 

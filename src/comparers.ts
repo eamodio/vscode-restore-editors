@@ -27,12 +27,19 @@ class TextDocumentComparer extends Comparer<TextDocument> {
 
 class TextEditorComparer extends Comparer<TextEditor> {
 
-    equals(lhs: TextEditor, rhs: TextEditor, usePosition: boolean = false) {
+    equals(lhs: TextEditor, rhs: TextEditor, options: { useId: boolean, usePosition: boolean } = { useId: false, usePosition: false }) {
         if (!lhs && !rhs) return true;
         if ((lhs && !rhs) || (!lhs && rhs)) return false;
 
-        return (!usePosition || (lhs.viewColumn === rhs.viewColumn)) &&
-            textDocumentComparer.equals(lhs.document, rhs.document);
+        if (options.usePosition && (lhs.viewColumn !== rhs.viewColumn)) return false;
+
+        if (options.useId && (!lhs.document || !rhs.document)) {
+            if ((lhs as any)._id !== (rhs as any)._id) return false;
+
+            return true;
+        }
+
+        return textDocumentComparer.equals(lhs.document, rhs.document);
     }
 }
 
