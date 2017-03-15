@@ -1,3 +1,6 @@
+[![](https://vsmarketplacebadge.apphb.com/version/eamodio.restore-editors.svg)](https://marketplace.visualstudio.com/items?itemName=eamodio.restore-editors)
+[![](https://vsmarketplacebadge.apphb.com/installs/eamodio.restore-editors.svg)](https://marketplace.visualstudio.com/items?itemName=eamodio.restore-editors)
+[![](https://vsmarketplacebadge.apphb.com/rating/eamodio.restore-editors.svg)](https://marketplace.visualstudio.com/items?itemName=eamodio.restore-editors)
 # Restore Editors
 
 Quickly save and restore all of the open editors.
