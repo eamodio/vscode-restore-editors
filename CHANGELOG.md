@@ -1,5 +1,9 @@
 ## Release Notes
 
+### 0.0.6
+- Changes extension activation to be based on commands to reduce overhead
+- Fixes more intermittent issues with editor tracking
+
 ### 0.0.5
 - Fixes intermittent issues with more robust editor tracking
 
