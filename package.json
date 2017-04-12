@@ -107,7 +107,11 @@
         ]
     },
     "activationEvents": [
-        "*"
+        "onCommand:restoreEditors.clear",
+        "onCommand:restoreEditors.open",
+        "onCommand:restoreEditors.restore",
+        "onCommand:restoreEditors.save",
+        "onCommand:restoreEditors.showQuickEditors"
     ],
     "scripts": {
         "compile": "tsc -watch -p ./",
@@ -120,11 +124,11 @@
     "dependencies": {
     },
     "devDependencies": {
-        "@types/mocha": "^2.2.39",
-        "@types/node": "^7.0.7",
+        "@types/mocha": "^2.2.40",
+        "@types/node": "^7.0.12",
         "mocha": "^3.2.0",
         "tslint": "^4.5.1",
-        "typescript": "^2.2.1",
-        "vscode": "^1.0.5"
+        "typescript": "^2.3.0",
+        "vscode": "^1.1.0"
     }
 }
