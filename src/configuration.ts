@@ -1,14 +1,8 @@
 'use strict';
 import { OutputLevel } from './logger';
 
-export interface IAdvancedConfig {
-    debug: boolean;
-    output: {
-        level: OutputLevel;
-    };
-}
-
 export interface IConfig {
+    debug: boolean;
+    outputLevel: OutputLevel;
     openPreview: boolean;
-    advanced: IAdvancedConfig;
 }

@@ -47,12 +47,12 @@
                     "default": true,
                     "description": "Specifies whether or not to open single editors in a preview tab"
                 },
-                "restoreEditors.advanced.debug": {
+                "restoreEditors.debug": {
                     "type": "boolean",
                     "default": false,
                     "description": "Specifies debug mode"
                 },
-                "restoreEditors.advanced.output.level": {
+                "restoreEditors.outputLevel": {
                     "type": "string",
                     "default": "silent",
                     "enum": [
