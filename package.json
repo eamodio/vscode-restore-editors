@@ -101,8 +101,8 @@
         "keybindings": [
             {
                 "command": "restoreEditors.showQuickEditors",
-                "key": "alt+d",
-                "mac": "alt+d"
+                "key": "ctrl+k ctrl+e",
+                "mac": "cmd+k cmd+e"
             }
         ]
     },
