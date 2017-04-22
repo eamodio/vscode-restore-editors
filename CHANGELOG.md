@@ -1,5 +1,11 @@
 ## Release Notes
 
+### 0.1.0
+- Adds `alt+right arrow` shortcut to open editors in the quick pick menu without closing the quick pick menu
+- Changes shortcut key for the `Show Saved Editors` command to `ctrl+k ctrl+e` (`cmd+k cmd+e` on macOS) to not conflict with `alt+d` to get to the Debug menu on Windows
+- Renames `restoreEditors.advanced.debug` setting to `restoreEditors.debug`
+- Renames `restoreEditors.output.level` setting to `restoreEditors.outputLevel`
+
 ### 0.0.6
 - Changes extension activation to be based on commands to reduce overhead
 - Fixes more intermittent issues with editor tracking
