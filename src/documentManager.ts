@@ -2,8 +2,11 @@
 import { commands, Disposable, ExtensionContext, TextEditor, window } from 'vscode';
 import { ActiveEditorTracker } from './activeEditorTracker';
 import { TextEditorComparer } from './comparers';
-import { ISavedEditor, SavedEditor } from './savedEditor';
+import { WorkspaceState } from './constants';
 import { Logger } from './logger';
+import { ISavedEditor, SavedEditor } from './savedEditor';
+
+export * from './savedEditor';
 
 export class DocumentManager extends Disposable {
 
@@ -14,11 +17,11 @@ export class DocumentManager extends Disposable {
     dispose() { }
 
     clear() {
-        this.context.workspaceState.update('restoreEditors:documents', undefined);
+        this.context.workspaceState.update(WorkspaceState.SavedDocuments, undefined);
     }
 
     get(): SavedEditor[] {
-        const data = this.context.workspaceState.get<ISavedEditor[]>('restoreEditors:documents');
+        const data = this.context.workspaceState.get<ISavedEditor[]>(WorkspaceState.SavedDocuments);
         return (data && data.map(_ => new SavedEditor(_))) || [];
     }
 
@@ -37,7 +40,7 @@ export class DocumentManager extends Disposable {
             }
         }
         catch (ex) {
-            Logger.error('DocumentManager.restore', ex);
+            Logger.error(ex, 'DocumentManager.restore');
         }
     }
 
@@ -75,10 +78,10 @@ export class DocumentManager extends Disposable {
                     } as ISavedEditor;
                 });
 
-            this.context.workspaceState.update('restoreEditors:documents', editors);
+            this.context.workspaceState.update(WorkspaceState.SavedDocuments, editors);
         }
         catch (ex) {
-            Logger.error('DocumentManager.save', ex);
+            Logger.error(ex, 'DocumentManager.save');
         }
     }
 }

@@ -1,10 +1,8 @@
 'use strict';
 import { ExtensionContext } from 'vscode';
-import { ClearCommand } from './commands/clear';
-import { OpenCommand } from './commands/open';
-import { RestoreCommand } from './commands/restore';
-import { SaveCommand } from './commands/save';
-import { ShowQuickEditorsCommand } from './commands/showQuickEditors';
+import { ClearCommand, OpenCommand, RestoreCommand, SaveCommand } from './commands';
+import { ShowQuickEditorsCommand } from './commands';
+import { Keyboard } from './commands';
 import { DocumentManager } from './documentManager';
 import { Logger } from './logger';
 
@@ -14,6 +12,8 @@ export async function activate(context: ExtensionContext) {
 
     const documentManager = new DocumentManager(context);
     context.subscriptions.push(documentManager);
+
+    context.subscriptions.push(new Keyboard());
 
     context.subscriptions.push(new ClearCommand(documentManager));
     context.subscriptions.push(new OpenCommand(documentManager));

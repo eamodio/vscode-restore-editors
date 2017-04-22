@@ -100,6 +100,11 @@
         },
         "keybindings": [
             {
+                "command": "restoreEditors.key.right",
+                "key": "alt+right",
+                "when": "restoreEditors:key:right"
+            },
+            {
                 "command": "restoreEditors.showQuickEditors",
                 "key": "ctrl+k ctrl+e",
                 "mac": "cmd+k cmd+e"

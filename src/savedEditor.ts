@@ -45,7 +45,7 @@ export class SavedEditor {
             }
         }
         catch (ex) {
-            Logger.error('SavedEditor.open', ex);
+            Logger.error(ex, 'SavedEditor.open');
             return undefined;
         }
     }
