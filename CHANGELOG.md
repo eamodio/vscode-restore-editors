@@ -1,5 +1,9 @@
 ## Release Notes
 
+### 0.1.1
+- Fixes marketplace badge layout
+
+
 ### 0.1.0
 - Adds `alt+right arrow` shortcut to open editors in the quick pick menu without closing the quick pick menu
 - Changes shortcut key for the `Show Saved Editors` command to `ctrl+k ctrl+e` (`cmd+k cmd+e` on macOS) to not conflict with `alt+d` to get to the Debug menu on Windows
