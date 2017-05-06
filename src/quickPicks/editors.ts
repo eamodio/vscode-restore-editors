@@ -10,9 +10,11 @@ import * as path from 'path';
 export class EditorQuickPickItem extends OpenFileCommandQuickPickItem {
 
     constructor(uri: Uri) {
+        const directory = path.dirname(workspace.asRelativePath(uri));
+
         super(uri, {
-            label: `$(file-symlink-file) ${path.basename(uri.fsPath)}`,
-            description: workspace.asRelativePath(path.dirname(uri.fsPath))
+            label: `\u00a0\u00a0\u00a0\u00a0 $(file-symlink-file) ${path.basename(uri.fsPath)}`,
+            description: directory === '.' ? '' : directory
         });
     }
 
@@ -48,6 +50,11 @@ export class EditorsQuickPick {
                 description: undefined,
                 detail: `Clears the previously saved editors`
             }, Commands.Clear));
+
+            items.splice(3, 0, new CommandQuickPickItem({
+                label: `Saved Editors`,
+                description: undefined
+            }, Commands.ShowQuickEditors));
         }
 
         if (goBackCommand) {
