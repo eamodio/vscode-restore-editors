@@ -1,8 +1,13 @@
 ## Release Notes
 
+### 0.2.0
+- Adds preview of editors when selecting (highlighting) an item in the quick pick menu
+- Adds `Saved Editors` grouping to the quick pick menu
+- Changes to use the supported vscode api for opening editors
+- Fixes full paths from sometimes showing up in the quick pick menu
+
 ### 0.1.1
 - Fixes marketplace badge layout
-
 
 ### 0.1.0
 - Adds `alt+right arrow` shortcut to open editors in the quick pick menu without closing the quick pick menu
