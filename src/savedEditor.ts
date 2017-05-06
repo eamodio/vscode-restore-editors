@@ -1,7 +1,6 @@
 'use strict';
-import { commands, Uri, ViewColumn, window, workspace } from 'vscode';
-import { BuiltInCommands } from './constants';
-import { Logger } from './logger';
+import { TextDocumentShowOptions, Uri, ViewColumn } from 'vscode';
+import { openEditor } from './commands';
 
 export interface ISavedEditor {
     uri: Uri;
@@ -34,19 +33,13 @@ export class SavedEditor {
         }
     }
 
-    async open(preview: boolean = false) {
-        try {
-            if (preview) {
-                return commands.executeCommand(BuiltInCommands.Open, this.uri, this.viewColumn);
-            }
-            else {
-                const document = await workspace.openTextDocument(this.uri);
-                return window.showTextDocument(document, this.viewColumn);
-            }
-        }
-        catch (ex) {
-            Logger.error(ex, 'SavedEditor.open');
-            return undefined;
-        }
+    async open(options?: TextDocumentShowOptions) {
+        const defaults: TextDocumentShowOptions = {
+            viewColumn: this.viewColumn,
+            preserveFocus: true,
+            preview: true
+        };
+
+        openEditor(this.uri, { ...defaults, ...(options || {}) });
     }
 }

@@ -1,6 +1,6 @@
 'use strict';
-import { CancellationTokenSource, commands, Disposable, QuickPickItem, QuickPickOptions, Uri, window } from 'vscode';
-import { Commands, Keyboard, KeyboardScope, KeyMapping, openEditor } from '../commands';
+import { CancellationTokenSource, commands, Disposable, QuickPickItem, QuickPickOptions, TextDocumentShowOptions, Uri, window } from 'vscode';
+import { Commands, Keyboard, Keys, KeyboardScope, KeyMapping, openEditor } from '../commands';
 // import { Logger } from '../logger';
 
 export function showQuickPickProgress(message: string, mapping?: KeyMapping, delay: boolean = false): CancellationTokenSource {
@@ -51,6 +51,11 @@ function _getInfiniteCancellablePromise(cancellation: CancellationTokenSource) {
     });
 }
 
+export interface QuickPickItem extends QuickPickItem {
+    onDidSelect?(): void;
+    onDidPressKey?(key: Keys): Thenable<{}>;
+}
+
 export class CommandQuickPickItem implements QuickPickItem {
 
     label: string;
@@ -80,12 +85,9 @@ export class CommandQuickPickItem implements QuickPickItem {
     execute(): Thenable<{}> {
         return commands.executeCommand(this.command, ...(this.args || []));
     }
-}
 
-export class KeyCommandQuickPickItem extends CommandQuickPickItem {
-
-    constructor(command: Commands, args?: any[]) {
-        super({ label: undefined, description: undefined }, command, args);
+    onDidPressKey(key: Keys): Thenable<{}> {
+        return this.execute();
     }
 }
 
@@ -95,12 +97,22 @@ export class OpenFileCommandQuickPickItem extends CommandQuickPickItem {
         super(item, undefined, undefined);
     }
 
-    async execute(pinned: boolean = false): Promise<{}> {
-        return this.open(pinned);
+    async execute(options?: TextDocumentShowOptions): Promise<{}> {
+        return openEditor(this.uri, options);
     }
 
-    async open(pinned: boolean = false): Promise<{} | undefined> {
-        return openEditor(this.uri, pinned);
+    onDidSelect() {
+        this.execute({
+            preserveFocus: true,
+            preview: true
+        });
+    }
+
+    onDidPressKey(key: Keys): Thenable<{}> {
+        return this.execute({
+            preserveFocus: true,
+            preview: false
+        });
     }
 }
 
@@ -110,10 +122,17 @@ export class OpenFilesCommandQuickPickItem extends CommandQuickPickItem {
         super(item, undefined, undefined);
     }
 
-    async execute(): Promise<{}> {
+    async execute(options: TextDocumentShowOptions = { preserveFocus: false, preview: false }): Promise<{}> {
         for (const uri of this.uris) {
-            await openEditor(uri, true);
+            await openEditor(uri, options);
         }
         return undefined;
+    }
+
+    async onDidPressKey(key: Keys): Promise<{}> {
+        return this.execute({
+            preserveFocus: true,
+            preview: false
+        });
     }
 }

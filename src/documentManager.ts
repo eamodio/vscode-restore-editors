@@ -36,7 +36,7 @@ export class DocumentManager extends Disposable {
             }
 
             for (const editor of editors) {
-                await editor.open();
+                await editor.open({ preview: false });
             }
         }
         catch (ex) {

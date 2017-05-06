@@ -1,7 +1,7 @@
 'use strict';
-import { QuickPickItem, QuickPickOptions, Uri, window, workspace } from 'vscode';
+import { QuickPickOptions, TextDocumentShowOptions, Uri, window, workspace } from 'vscode';
 import { Commands, Keyboard } from '../commands';
-import { CommandQuickPickItem, OpenFileCommandQuickPickItem } from './common';
+import { CommandQuickPickItem, OpenFileCommandQuickPickItem, QuickPickItem } from './common';
 import { IConfig } from '../configuration';
 import { ExtensionKey } from '../constants';
 import { SavedEditor } from '../documentManager';
@@ -16,11 +16,11 @@ export class EditorQuickPickItem extends OpenFileCommandQuickPickItem {
         });
     }
 
-    async execute(pinned?: boolean): Promise<{}> {
-        if (pinned === undefined) {
-            pinned = !workspace.getConfiguration().get<IConfig>(ExtensionKey).openPreview;
+    async execute(options: TextDocumentShowOptions = {}): Promise<{}> {
+        if (options.preview === undefined) {
+            options.preview = workspace.getConfiguration().get<IConfig>(ExtensionKey).openPreview;
         }
-        return this.open(pinned);
+        return super.execute(options);
     }
 }
 
@@ -61,6 +61,9 @@ export class EditorsQuickPick {
             placeHolder: 'Showing saved editors',
             onDidSelectItem: (item: QuickPickItem) => {
                 scope.setKeyCommand('right', item);
+                if (typeof item.onDidSelect === 'function') {
+                    item.onDidSelect();
+                }
             }
         } as QuickPickOptions);
 
