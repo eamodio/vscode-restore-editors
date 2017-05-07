@@ -1,6 +1,6 @@
 ## Release Notes
 
-### 0.2.0
+### 0.2.1
 - Adds preview of editors when selecting (highlighting) an item in the quick pick menu
 - Adds `Saved Editors` grouping to the quick pick menu
 - Changes to use the supported vscode api for opening editors
