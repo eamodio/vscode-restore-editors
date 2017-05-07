@@ -1,5 +1,5 @@
 'use strict';
-import { QuickPickOptions, TextDocumentShowOptions, Uri, window, workspace } from 'vscode';
+import { QuickPickOptions, TextDocumentShowOptions, TextEditor, Uri, window, workspace } from 'vscode';
 import { Commands, Keyboard } from '../commands';
 import { CommandQuickPickItem, OpenFileCommandQuickPickItem, QuickPickItem } from './common';
 import { IConfig } from '../configuration';
@@ -18,9 +18,10 @@ export class EditorQuickPickItem extends OpenFileCommandQuickPickItem {
         });
     }
 
-    async execute(options: TextDocumentShowOptions = {}): Promise<{}> {
+    async execute(options: TextDocumentShowOptions = {}): Promise<TextEditor | undefined> {
         if (options.preview === undefined) {
-            options.preview = workspace.getConfiguration().get<IConfig>(ExtensionKey).openPreview;
+            const cfg = workspace.getConfiguration().get<IConfig>(ExtensionKey);
+            options.preview = cfg && cfg.openPreview;
         }
         return super.execute(options);
     }
@@ -34,26 +35,26 @@ export class EditorsQuickPick {
 
         items.splice(0, 0, new CommandQuickPickItem({
             label: `$(cloud-upload) Save Opened Editors`,
-            description: undefined,
+            description: '',
             detail: `Saves the basic layout of the open editors`
         }, Commands.Save));
 
         if (items.length > 1) {
             items.splice(0, 0, new CommandQuickPickItem({
                 label: `$(cloud-download) Open Saved Editors`,
-                description: undefined,
+                description: '',
                 detail: `Opens all of the previously saved editors`
             }, Commands.Open));
 
             items.splice(2, 0, new CommandQuickPickItem({
                 label: `$(x) Clear Saved Editors`,
-                description: undefined,
+                description: '',
                 detail: `Clears the previously saved editors`
             }, Commands.Clear));
 
             items.splice(3, 0, new CommandQuickPickItem({
                 label: `Saved Editors`,
-                description: undefined
+                description: ''
             }, Commands.ShowQuickEditors));
         }
 

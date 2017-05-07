@@ -10,7 +10,7 @@ export interface ISavedEditor {
 export class SavedEditor {
 
     uri: Uri;
-    viewColumn: ViewColumn;
+    viewColumn: ViewColumn | undefined;
 
     constructor(savedEditor: ISavedEditor);
     constructor(uri: string, viewColumn: ViewColumn);

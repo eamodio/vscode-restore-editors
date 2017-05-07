@@ -1,5 +1,5 @@
 'use strict';
-import { commands, Disposable, TextDocumentShowOptions, Uri, window, workspace } from 'vscode';
+import { commands, Disposable, TextDocumentShowOptions, TextEditor, Uri, window, workspace } from 'vscode';
 import { BuiltInCommands } from '../constants';
 import { Logger } from '../logger';
 
@@ -37,7 +37,7 @@ export abstract class Command extends Disposable {
     abstract execute(...args: any[]): any;
 }
 
-export async function openEditor(uri: Uri, options?: TextDocumentShowOptions) {
+export async function openEditor(uri: Uri, options?: TextDocumentShowOptions): Promise<TextEditor | undefined> {
     try {
         const defaults: TextDocumentShowOptions = {
             preserveFocus: false,

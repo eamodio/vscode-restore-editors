@@ -5,7 +5,7 @@ import { commands, Disposable, TextEditor, window } from 'vscode';
 export class ActiveEditorTracker extends Disposable {
 
     private _disposable: Disposable;
-    private _resolver: (value?: TextEditor | PromiseLike<TextEditor>) => void;
+    private _resolver: ((value?: TextEditor | PromiseLike<TextEditor>) => void) | undefined;
 
     constructor() {
         super(() => this.dispose());
@@ -27,11 +27,11 @@ export class ActiveEditorTracker extends Disposable {
         return this.wait(timeout);
     }
 
-    async close(): Promise<{}> {
+    async close(): Promise<{} | undefined> {
         return commands.executeCommand('workbench.action.closeActiveEditor');
     }
 
-    async next(): Promise<{}> {
+    async next(): Promise<{} | undefined> {
         return commands.executeCommand('workbench.action.nextEditor');
     }
 
