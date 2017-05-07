@@ -2,6 +2,7 @@
 
 export const ExtensionId = 'restore-editors';
 export const ExtensionKey = 'restoreEditors';
+export const ExtensionOutputChannelName = 'RestoreEditors';
 export const QualifiedExtensionId = `eamodio.${ExtensionId}`;
 
 export type BuiltInCommands = 'vscode.open' | 'setContext';

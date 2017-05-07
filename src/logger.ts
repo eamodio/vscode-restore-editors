@@ -1,10 +1,9 @@
 'use strict';
 import { ExtensionContext, OutputChannel, window, workspace } from 'vscode';
 import { IConfig } from './configuration';
-import { ExtensionKey } from './constants';
+import { ExtensionKey, ExtensionOutputChannelName } from './constants';
 
-const OutputChannelName = 'RestoreEditors';
-const ConsolePrefix = `[${OutputChannelName}]`;
+const ConsolePrefix = `[${ExtensionOutputChannelName}]`;
 
 export type OutputLevel = 'silent' | 'errors' | 'verbose';
 export const OutputLevel = {
@@ -29,7 +28,7 @@ function onConfigurationChanged() {
             output && output.dispose();
         }
         else {
-            output = output || window.createOutputChannel(OutputChannelName);
+            output = output || window.createOutputChannel(ExtensionOutputChannelName);
         }
     }
 }
