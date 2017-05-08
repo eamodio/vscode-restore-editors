@@ -52,9 +52,9 @@ export class DocumentManager extends Disposable {
             let editor = active;
             const openEditors: TextEditor[] = [];
             do {
-                if (editor) {
+                if (editor != null) {
                     // If we didn't start with a valid editor, set one once we find it
-                    if (!active) {
+                    if (active === undefined) {
                         active = editor;
                     }
 
@@ -62,15 +62,13 @@ export class DocumentManager extends Disposable {
                 }
 
                 editor = await editorTracker.awaitNext(500);
-                if (editor && openEditors.some(_ => TextEditorComparer.equals(_, editor, { useId: true, usePosition: true }))) {
-                    break;
-                }
-            } while ((!active && !editor) || !TextEditorComparer.equals(active, editor, { useId: true, usePosition: true }));
+                if (editor !== undefined && openEditors.some(_ => TextEditorComparer.equals(_, editor, { useId: true, usePosition: true }))) break;
+            } while ((active === undefined && editor === undefined) || !TextEditorComparer.equals(active, editor, { useId: true, usePosition: true }));
 
             editorTracker.dispose();
 
             const editors = openEditors
-                .filter(_ => _.document)
+                .filter(_ => _.document !== undefined)
                 .map(_ => {
                     return {
                         uri: _.document.uri,
