@@ -41,7 +41,7 @@ export class Logger {
     }
 
     static log(message?: any, ...params: any[]): void {
-        if (debug && level !== OutputLevel.Silent) {
+        if (debug) {
             console.log(ConsolePrefix, message, ...params);
         }
 
