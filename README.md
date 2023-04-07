@@ -1,4 +1,7 @@
-[![](https://vsmarketplacebadge.apphb.com/version/eamodio.restore-editors.svg)](https://marketplace.visualstudio.com/items?itemName=eamodio.restore-editors) [![](https://vsmarketplacebadge.apphb.com/installs/eamodio.restore-editors.svg)](https://marketplace.visualstudio.com/items?itemName=eamodio.restore-editors) [![](https://vsmarketplacebadge.apphb.com/rating/eamodio.restore-editors.svg)](https://marketplace.visualstudio.com/items?itemName=eamodio.restore-editors)
+[![](https://vsmarketplacebadges.dev/version-short/amodio.restore-editors.svg)](https://marketplace.visualstudio.com/items?itemName=amodio.restore-editors)
+[![](https://vsmarketplacebadges.dev/installs-short/amodio.restore-editors.svg)](https://marketplace.visualstudio.com/items?itemName=amodio.restore-editors)
+[![](https://vsmarketplacebadges.dev/rating-short/amodio.restore-editors.svg)](https://marketplace.visualstudio.com/items?itemName=amodio.restore-editors)
+
 # Restore Editors
 
 Quickly save and restore all of the open editors.
@@ -12,6 +15,7 @@ Editors are saved into a persisted per-folder "slot" for later retrieval. This b
 ## Features
 
 - Adds a `Show Saved Editors` command (`restoreEditors.showQuickEditors`) with a shortcut of `ctrl+k ctrl+e` (`cmd+k cmd+e` on macOS) to show a quick pick menu of the currently saved editors
+
   - Quickly see the set of saved editors; select an editor entry to open it
   - Provides entries to `Save Opened Editors`, `Open Saved Editors` when available, and `Clear Saved Editors` when available
   - Use the `alt+right arrow` shortcut on an entry to execute it without closing the quick pick menu
@@ -26,9 +30,9 @@ Editors are saved into a persisted per-folder "slot" for later retrieval. This b
 
 ## Extension Settings
 
-|Name | Description
-|-----|------------
-|`restoreEditors.openPreview`|Specifies whether or not to open single editors in a preview tab
+| Name                         | Description                                                      |
+| ---------------------------- | ---------------------------------------------------------------- |
+| `restoreEditors.openPreview` | Specifies whether or not to open single editors in a preview tab |
 
 ## Known Issues
 
