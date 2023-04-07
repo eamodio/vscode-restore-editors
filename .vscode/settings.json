@@ -1,11 +1,50 @@
 {
-    "files.exclude": {
-        "node_modules": true,
-        "out": true
-    },
-    "search.exclude": {
-        "node_modules": true,
-        "out": true
-    },
-    "typescript.tsdk": "./node_modules/typescript/lib" // we want to use the TS server from our node_modules folder to control its version
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": true
+	},
+	"eslint.packageManager": "yarn",
+	"files.associations": {
+		".eslintrc*.json": "jsonc"
+	},
+	"files.exclude": {
+		"**/.vscode-test": true,
+		"**/.vscode-test-web": true
+	},
+	"files.insertFinalNewline": true,
+	"files.trimTrailingWhitespace": true,
+	"githubIssues.queries": [
+		{
+			"label": "Triage",
+			"query": "state:open repo:${owner}/${repository} label:triage sort:updated-desc"
+		},
+		{
+			"label": "Current",
+			"query": "state:open repo:${owner}/${repository} milestone:\"January 2023\" sort:updated-desc"
+		},
+		{
+			"label": "Soon™",
+			"query": "state:open repo:${owner}/${repository} milestone:Soon™ sort:updated-desc"
+		},
+		{
+			"label": "Verify",
+			"query": "state:closed repo:${owner}/${repository} -milestone:Shipped label:pending-release label:needs-verification sort:updated-desc"
+		},
+		{
+			"label": "Pending Release",
+			"query": "state:closed repo:${owner}/${repository} label:pending-release sort:updated-desc"
+		},
+		{
+			"label": "All",
+			"query": "state:open repo:${owner}/${repository} sort:updated-desc"
+		}
+	],
+	"[html][javascript][json][jsonc][markdown][scss][svg][typescript][typescriptreact]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"npm.packageManager": "yarn",
+	"search.exclude": {
+		"**/dist": true
+	},
+	"typescript.preferences.importModuleSpecifier": "project-relative",
+	"typescript.tsdk": "node_modules\\typescript\\lib"
 }

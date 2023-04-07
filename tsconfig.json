@@ -1,21 +1,11 @@
 {
-    "compilerOptions": {
-        "forceConsistentCasingInFileNames": true,
-        "lib": [ "es2015" ],
-        "module": "commonjs",
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitReturns": true,
-        "noUnusedLocals": true,
-        "outDir": "out",
-        "removeComments": true,
-        "rootDir": ".",
-        "skipLibCheck": true,
-        "sourceMap": true,
-        "strict": true,
-        "target": "es2015"
-    },
-    "exclude": [
-        "node_modules",
-        ".vscode-test"
-    ]
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		"paths": {
+			"@env/*": ["src/env/node/*"]
+		},
+		"tsBuildInfoFile": "tsconfig.tsbuildinfo"
+	},
+	"include": ["src/**/*"],
+	"exclude": ["src/test/**/*", "src/env/browser/**/*"]
 }

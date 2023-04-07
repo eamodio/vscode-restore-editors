@@ -1,19 +1,39 @@
-'use strict';
+export const extensionPrefix = 'restoreEditors';
+type StripPrefix<T extends string, S extends '.' | ':'> = T extends `${typeof extensionPrefix}${S}${infer U}`
+	? U
+	: never;
 
-export const ExtensionId = 'restore-editors';
-export const ExtensionKey = 'restoreEditors';
-export const ExtensionOutputChannelName = 'RestoreEditors';
-export const QualifiedExtensionId = `eamodio.${ExtensionId}`;
+export type Commands =
+	| `${typeof extensionPrefix}.key.${Keys}`
+	| `${typeof extensionPrefix}.clear`
+	| `${typeof extensionPrefix}.openSavedTab`
+	| `${typeof extensionPrefix}.restore`
+	| `${typeof extensionPrefix}.save`;
+export type CommandsUnqualified = StripPrefix<Commands, '.'>;
 
-export type BuiltInCommands = 'vscode.open' | 'setContext' | 'workbench.action.closeActiveEditor' | 'workbench.action.nextEditor';
-export const BuiltInCommands = {
-    CloseActiveEditor: 'workbench.action.closeActiveEditor' as BuiltInCommands,
-    NextEditor: 'workbench.action.nextEditor' as BuiltInCommands,
-    Open: 'vscode.open' as BuiltInCommands,
-    SetContext: 'setContext' as BuiltInCommands
-};
+export type ContextKeys = `${typeof extensionPrefix}:key:${Keys}`;
 
-export type WorkspaceState = 'restoreEditors:documents';
-export const WorkspaceState = {
-    SavedDocuments: 'restoreEditors:documents' as WorkspaceState
-};
+export type CoreCommands =
+	| 'setContext'
+	| 'vscode.diff'
+	| 'vscode.getEditorLayout'
+	| 'vscode.open'
+	| 'vscode.openWith'
+	| 'vscode.setEditorLayout'
+	| 'workbench.action.closeActiveEditor'
+	| 'workbench.action.closeAllEditors'
+	| 'workbench.action.createTerminalEditor'
+	| 'workbench.action.nextEditor';
+
+export const keys = [
+	'left',
+	'alt+left',
+	'ctrl+left',
+	'right',
+	'alt+right',
+	'ctrl+right',
+	'alt+enter',
+	'ctrl+enter',
+	'escape',
+] as const;
+export type Keys = (typeof keys)[number];

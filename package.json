@@ -1,142 +1,236 @@
 {
-    "name": "restore-editors",
-    "version": "0.2.1",
-    "author": {
-        "name": "Eric Amodio",
-        "email": "eamodio@gmail.com"
-    },
-    "publisher": "eamodio",
-    "engines": {
-        "vscode": "^1.12.0"
-    },
-    "license": "SEE LICENSE IN LICENSE",
-    "displayName": "Restore Editors",
-    "description": "Quickly save and restore all of the open editors",
-    "categories": [
-        "Other"
-    ],
-    "keywords": [
-        "editors",
-        "documents",
-        "restore",
-        "save",
-        "files",
-        "tabs",
-        "open"
-    ],
-    "galleryBanner": {
-        "color": "#56098c",
-        "theme": "dark"
-    },
-    "icon": "images/icon.svg",
-    "preview": true,
-    "homepage": "https://github.com/eamodio/vscode-restore-editors/blob/master/README.md",
-    "bugs": {
-        "url": "https://github.com/eamodio/vscode-restore-editors/issues"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/eamodio/vscode-restore-editors.git"
-    },
-    "main": "./out/src/extension",
-    "contributes": {
-        "configuration": {
-            "type": "object",
-            "title": "Restore Editors configuration",
-            "properties": {
-                "restoreEditors.openPreview": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Specifies whether or not to open single editors in a preview tab"
-                },
-                "restoreEditors.debug": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Specifies debug mode"
-                },
-                "restoreEditors.outputLevel": {
-                    "type": "string",
-                    "default": "silent",
-                    "enum": [
-                        "silent",
-                        "errors",
-                        "verbose"
-                    ],
-                    "description": "Specifies how much (if any) output will be sent to the RestoreEditors output channel"
-                }
-            }
-        },
-        "commands": [
-            {
-                "command": "restoreEditors.clear",
-                "title": "Clear Saved Editors"
-            },
-            {
-                "command": "restoreEditors.open",
-                "title": "Open Saved Editors"
-            },
-            {
-                "command": "restoreEditors.restore",
-                "title": "Restore Only Saved Editors"
-            },
-            {
-                "command": "restoreEditors.save",
-                "title": "Save Opened Editors"
-            },
-            {
-                "command": "restoreEditors.showQuickEditors",
-                "title": "Show Saved Editors"
-            }
-        ],
-        "menus": {
-            "editor/title": [
-                {
-                    "command": "restoreEditors.open",
-                    "group": "restoreEditors"
-                },
-                {
-                    "command": "restoreEditors.save",
-                    "group": "restoreEditors"
-                }
-             ]
-        },
-        "keybindings": [
-            {
-                "command": "restoreEditors.key.right",
-                "key": "alt+right",
-                "when": "restoreEditors:key:right"
-            },
-            {
-                "command": "restoreEditors.showQuickEditors",
-                "key": "ctrl+k ctrl+e",
-                "mac": "cmd+k cmd+e"
-            }
-        ]
-    },
-    "activationEvents": [
-        "onCommand:restoreEditors.clear",
-        "onCommand:restoreEditors.open",
-        "onCommand:restoreEditors.restore",
-        "onCommand:restoreEditors.save",
-        "onCommand:restoreEditors.showQuickEditors"
-    ],
-    "scripts": {
-        "compile": "npm run lint && tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "lint": "tslint --project tslint.json",
-        "pack": "git clean -xdf --exclude=node_modules/ && vsce package",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "pub": "git clean -xdf && vsce publish",
-        "vscode:prepublish": "npm install && npm run compile"
-    },
-    "dependencies": {
-    },
-    "devDependencies": {
-        "@types/mocha": "2.2.41",
-        "@types/node": "7.0.18",
-        "mocha": "3.3.0",
-        "tslint": "5.2.0",
-        "typescript": "2.3.2",
-        "vscode": "1.1.0"
-    }
+	"name": "restore-editors",
+	"displayName": "Restore Editors",
+	"description": "Quickly save and restore all of the open editors",
+	"version": "0.2.1",
+	"engines": {
+		"vscode": "^1.76.0"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"publisher": "amodio",
+	"author": {
+		"name": "Eric Amodio",
+		"email": "eamodio@gmail.com"
+	},
+	"homepage": "https://github.com/eamodio/vscode-restore-editors/blob/master/README.md",
+	"bugs": {
+		"url": "https://github.com/eamodio/vscode-restore-editors/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/eamodio/vscode-restore-editors.git"
+	},
+	"main": "./dist/restore-editors.js",
+	"browser": "./dist/browser/restore-editors.js",
+	"icon": "images/icon.png",
+	"preview": true,
+	"badges": [
+		{
+			"url": "https://img.shields.io/badge/vscode--dev--community-restore--editors-blue.svg?logo=slack&labelColor=555555",
+			"href": "https://vscode-slack.amod.io",
+			"description": "Join us in the #restore-editors channel"
+		}
+	],
+	"sponsor": {
+		"url": "https://github.com/sponsors/eamodio"
+	},
+	"categories": [
+		"Other"
+	],
+	"galleryBanner": {
+		"color": "#56098c",
+		"theme": "dark"
+	},
+	"keywords": [
+		"editors",
+		"documents",
+		"restore",
+		"save",
+		"files",
+		"tabs",
+		"open"
+	],
+	"activationEvents": [],
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		}
+	},
+	"contributes": {
+		"configuration": [
+			{
+				"id": "restoreeditors",
+				"title": "Restore Editors",
+				"order": 10,
+				"properties": {
+					"restoreEditors.openPreview": {
+						"type": "boolean",
+						"default": true,
+						"markdownDescription": "Specifies whether or not to open single editors in a preview tab",
+						"scope": "window",
+						"order": 10
+					},
+					"restoreEditors.outputLevel": {
+						"type": "string",
+						"default": "errors",
+						"enum": [
+							"silent",
+							"errors",
+							"verbose",
+							"debug"
+						],
+						"enumDescriptions": [
+							"Logs nothing",
+							"Logs only errors",
+							"Logs all errors, warnings, and messages",
+							"Logs all errors, warnings, and messages with extra context useful for debugging"
+						],
+						"markdownDescription": "Specifies how much (if any) output will be sent to the _Restore Editors_ output channel",
+						"scope": "window",
+						"order": 40
+					}
+				}
+			}
+		],
+		"commands": [
+			{
+				"command": "restoreEditors.clear",
+				"title": "Clear Saved Editor Layout",
+				"category": "Restore Editors"
+			},
+			{
+				"command": "restoreEditors.restore",
+				"title": "Restore Saved Editor Layout",
+				"category": "Restore Editors"
+			},
+			{
+				"command": "restoreEditors.save",
+				"title": "Save Editor Layout",
+				"category": "Restore Editors"
+			},
+			{
+				"command": "restoreEditors.openSavedTab",
+				"title": "Open Saved Editor Tab...",
+				"category": "Restore Editors"
+			}
+		],
+		"menus": {
+			"editor/title": [
+				{
+					"command": "restoreEditors.restore",
+					"group": "1_restoreEditors@100"
+				},
+				{
+					"command": "restoreEditors.save",
+					"group": "1_restoreEditors@101"
+				}
+			]
+		},
+		"keybindings": [
+			{
+				"command": "restoreEditors.openSavedTab",
+				"key": "ctrl+k ctrl+e",
+				"mac": "cmd+k cmd+e"
+			},
+			{
+				"command": "restoreEditors.key.left",
+				"key": "left",
+				"when": "restoreEditors:key:left"
+			},
+			{
+				"command": "restoreEditors.key.alt+left",
+				"key": "alt+left",
+				"when": "restoreEditors:key:alt+left"
+			},
+			{
+				"command": "restoreEditors.key.ctrl+left",
+				"key": "ctrl+left",
+				"mac": "cmd+left",
+				"when": "restoreEditors:key:ctrl+left"
+			},
+			{
+				"command": "restoreEditors.key.right",
+				"key": "right",
+				"when": "restoreEditors:key:right"
+			},
+			{
+				"command": "restoreEditors.key.alt+right",
+				"key": "alt+right",
+				"when": "restoreEditors:key:alt+right"
+			},
+			{
+				"command": "restoreEditors.key.ctrl+right",
+				"key": "ctrl+right",
+				"mac": "cmd+right",
+				"when": "restoreEditors:key:ctrl+right"
+			},
+			{
+				"command": "restoreEditors.key.alt+enter",
+				"key": "alt+enter",
+				"when": "restoreEditors:key:alt+enter"
+			},
+			{
+				"command": "restoreEditors.key.ctrl+enter",
+				"key": "ctrl+enter",
+				"when": "restoreEditors:key:ctrl+enter"
+			},
+			{
+				"command": "restoreEditors.key.escape",
+				"key": "escape",
+				"when": "restoreEditors:key:escape && editorTextFocus && !findWidgetVisible && !quickFixWidgetVisible && !renameInputVisible && !suggestWidgetVisible && !isInEmbeddedEditor"
+			}
+		]
+	},
+	"scripts": {
+		"analyze:bundle": "webpack --mode production --env analyzeBundle",
+		"analyze:deps": "webpack --env analyzeDeps",
+		"build": "webpack --mode development",
+		"bundle": "webpack --mode production",
+		"clean": "npx rimraf dist out .vscode-test .vscode-test-web .eslintcache* tsconfig*.tsbuildinfo",
+		"lint": "eslint \"src/**/*.ts?(x)\" --fix",
+		"package": "vsce package --yarn",
+		"package-pre": "yarn run patch-pre && yarn run package --pre-release",
+		"patch-pre": "node ./scripts/applyPreReleasePatch.js",
+		"pretty": "prettier --config .prettierrc --loglevel warn --write .",
+		"pub": "vsce publish --yarn",
+		"pub-pre": "vsce publish --yarn --pre-release",
+		"rebuild": "yarn run reset && yarn run build",
+		"reset": "yarn run clean && yarn --frozen-lockfile",
+		"watch": "webpack --watch --mode development",
+		"web": "vscode-test-web --extensionDevelopmentPath=. --folder-uri=vscode-vfs://github/eamodio/vscode-find-related",
+		"web:serve": "npx serve --cors -l 5000",
+		"web:tunnel": "npx localtunnel -p 5000",
+		"update-dts": "pushd \"src/@types\" && npx vscode-dts dev && popd",
+		"update-dts:master": "pushd \"src/@types\" && npx vscode-dts master && popd",
+		"vscode:prepublish": "yarn run bundle"
+	},
+	"dependencies": {
+		"os-browserify": "0.3.0",
+		"path-browserify": "1.0.1"
+	},
+	"devDependencies": {
+		"@types/node": "16.11.47",
+		"@types/vscode": "1.72.0",
+		"@typescript-eslint/eslint-plugin": "5.56.0",
+		"@typescript-eslint/parser": "5.56.0",
+		"@vscode/vsce": "2.18.0",
+		"circular-dependency-plugin": "5.2.2",
+		"clean-webpack-plugin": "4.0.0",
+		"esbuild": "0.17.14",
+		"esbuild-loader": "3.0.1",
+		"eslint": "8.36.0",
+		"eslint-cli": "1.1.1",
+		"eslint-config-prettier": "8.8.0",
+		"eslint-import-resolver-typescript": "3.5.3",
+		"eslint-plugin-anti-trojan-source": "1.1.1",
+		"eslint-plugin-import": "2.27.5",
+		"fork-ts-checker-webpack-plugin": "6.5.3",
+		"prettier": "2.8.7",
+		"terser-webpack-plugin": "5.3.7",
+		"ts-loader": "9.4.2",
+		"typescript": "5.0.2",
+		"webpack": "5.76.3",
+		"webpack-bundle-analyzer": "4.8.0",
+		"webpack-cli": "5.0.1"
+	}
 }

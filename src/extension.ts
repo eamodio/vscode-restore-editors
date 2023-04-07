@@ -1,26 +1,41 @@
-'use strict';
-import { ExtensionContext } from 'vscode';
-import { ClearCommand, OpenCommand, RestoreCommand, SaveCommand } from './commands';
-import { ShowQuickEditorsCommand } from './commands';
-import { Keyboard } from './commands';
-import { DocumentManager } from './documentManager';
-import { Logger } from './logger';
+import type { ExtensionContext } from 'vscode';
+import { version as codeVersion, env, ExtensionMode, Uri, window } from 'vscode';
+import { isWeb } from '@env/platform';
+import { fromOutputLevel } from './config';
+import { Container } from './container';
+import { configuration, Configuration } from './system/configuration';
+import { Logger } from './system/logger';
+import { satisfies } from './system/version';
 
-// this method is called when your extension is activated
-export async function activate(context: ExtensionContext) {
-    Logger.configure(context);
+export function activate(context: ExtensionContext) {
+	const extensionVersion: string = context.extension.packageJSON.version;
+	const prerelease = satisfies(extensionVersion, '> 2023.0.0');
 
-    const documentManager = new DocumentManager(context);
-    context.subscriptions.push(documentManager);
+	Logger.configure(
+		{
+			name: 'Restore Editors',
+			createChannel: function (name: string) {
+				return window.createOutputChannel(name);
+			},
+			toLoggable: function (o: any) {
+				if (o instanceof Uri) return `Uri(${o.toString(true)})`;
+				return undefined;
+			},
+		},
+		fromOutputLevel(configuration.get('outputLevel')),
+		context.extensionMode === ExtensionMode.Development,
+	);
 
-    context.subscriptions.push(new Keyboard());
+	Logger.log(
+		`Restore Editors${prerelease ? ' (pre-release)' : ''} v${extensionVersion} activating in ${
+			env.appName
+		}(${codeVersion}) on the ${isWeb ? 'web' : 'desktop'}`,
+	);
 
-    context.subscriptions.push(new ClearCommand(documentManager));
-    context.subscriptions.push(new OpenCommand(documentManager));
-    context.subscriptions.push(new RestoreCommand(documentManager));
-    context.subscriptions.push(new SaveCommand(documentManager));
-    context.subscriptions.push(new ShowQuickEditorsCommand(documentManager));
+	Configuration.configure(context);
+	Container.create(context);
 }
 
-// this method is called when your extension is deactivated
-export function deactivate() { }
+export function deactivate() {
+	// nothing to do
+}

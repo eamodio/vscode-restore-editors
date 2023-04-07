@@ -1,0 +1,10 @@
+{
+	"extends": [".eslintrc.base.json"],
+	"env": {
+		"node": true
+	},
+	"ignorePatterns": ["src/test/**/*", "src/env/browser/*"],
+	"parserOptions": {
+		"project": "tsconfig.json"
+	}
+}
