@@ -8,7 +8,6 @@ export enum OutputLevel {
 }
 
 export interface Config {
-	openPreview: boolean;
 	outputLevel: OutputLevel;
 }
 

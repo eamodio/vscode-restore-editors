@@ -97,7 +97,10 @@ export class Storage implements Disposable {
 	}
 
 	@debug({ args: { 1: false }, logThreshold: 250 })
-	async storeWorkspace(key: keyof WorkspaceStorage, value: unknown | undefined): Promise<void> {
+	async storeWorkspace<T extends keyof WorkspaceStorage>(
+		key: T,
+		value: WorkspaceStorage[T] | undefined,
+	): Promise<void> {
 		await this.context.workspaceState.update(`${extensionPrefix}:${key}`, value);
 		this._onDidChange.fire({ key: key, workspace: true });
 	}
@@ -110,23 +113,18 @@ export type DeprecatedGlobalStorage = object;
 export type GlobalStorage = object;
 
 export type DeprecatedWorkspaceStorage = {
-	// /** @deprecated use `editors` */
-	// documents: Record<string, StoredEditor>;
+	/** @deprecated use `layouts` */
+	documents: Record<string, any>;
 };
 
-export type WorkspaceStorage = {
-	documents: StoredEditor[];
-	layout: StoredLayout;
-};
+export type WorkspaceStorage =
+	| {
+			layouts: Stored<Layouts>;
+	  } & { [key in `layout:${string}`]: Stored<Layout> };
 
 export interface Stored<T, SchemaVersion extends number = 1> {
 	v: SchemaVersion;
 	data: T;
-}
-
-export interface StoredEditor {
-	uri: string;
-	viewColumn?: ViewColumn;
 }
 
 export interface StoredTabCommon {
@@ -191,8 +189,17 @@ type EditorLayoutGroup = {
 	size: number;
 };
 
-export interface StoredLayout<SchemaVersion extends number = 1> {
-	v: SchemaVersion;
+export interface LayoutDescriptor {
+	id: string;
+	label: string;
+
+	context: string | undefined;
+	tabs: number;
+	timestamp: number;
+}
+
+export interface Layout {
+	id: string;
 
 	editorLayout?: {
 		groups?: EditorLayoutGroup[];
@@ -200,3 +207,5 @@ export interface StoredLayout<SchemaVersion extends number = 1> {
 	};
 	tabs: StoredTab[];
 }
+
+export type Layouts = Record<string, LayoutDescriptor>;

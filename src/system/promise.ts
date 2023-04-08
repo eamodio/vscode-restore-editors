@@ -69,6 +69,30 @@ export function cancellable<T>(
 	});
 }
 
+export interface Deferred<T> {
+	promise: Promise<T>;
+	fulfill: (value: T) => void;
+	cancel(): void;
+}
+
+export function defer<T>(): Deferred<T> {
+	const deferred: Deferred<T> = { promise: undefined!, fulfill: undefined!, cancel: undefined! };
+	deferred.promise = new Promise((resolve, reject) => {
+		deferred.fulfill = resolve;
+		deferred.cancel = reject;
+	});
+	return deferred;
+}
+
+export function getSettledValue<T>(promise: PromiseSettledResult<T>): T | undefined;
+export function getSettledValue<T>(promise: PromiseSettledResult<T>, defaultValue: NonNullable<T>): NonNullable<T>;
+export function getSettledValue<T>(
+	promise: PromiseSettledResult<T>,
+	defaultValue: T | undefined = undefined,
+): T | typeof defaultValue {
+	return promise.status === 'fulfilled' ? promise.value : defaultValue;
+}
+
 export function isPromise<T>(obj: PromiseLike<T> | T): obj is Promise<T> {
 	return obj instanceof Promise || typeof (obj as PromiseLike<T>)?.then === 'function';
 }

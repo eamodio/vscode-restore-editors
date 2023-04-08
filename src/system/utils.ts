@@ -1,23 +1,7 @@
-import type { TextDocumentShowOptions, TextEditor } from 'vscode';
-import { Uri, ViewColumn, window, workspace } from 'vscode';
+import type { TextDocumentShowOptions, ViewColumn } from 'vscode';
+import { Uri } from 'vscode';
+import type { StoredTab } from '../storage';
 import { executeCoreCommand } from './command';
-import { configuration } from './configuration';
-import { Logger } from './logger';
-
-export async function openEditor(uri: Uri, options?: TextDocumentShowOptions): Promise<TextEditor | undefined> {
-	try {
-		const document = await workspace.openTextDocument(uri);
-		return window.showTextDocument(document, {
-			preserveFocus: false,
-			preview: configuration.get('openPreview'),
-			viewColumn: ViewColumn.Active, //configuration.get('openSideBySide') ? ViewColumn.Beside : ViewColumn.Active,
-			...options,
-		});
-	} catch (ex) {
-		Logger.error(ex, 'openEditor');
-		return undefined;
-	}
-}
 
 export async function openCustomUri(
 	uri: string | Uri,
@@ -47,6 +31,46 @@ export async function openDiffUris(
 		label,
 		options,
 	);
+}
+
+export async function openTab(tab: StoredTab, options?: TextDocumentShowOptions) {
+	switch (tab.type) {
+		case 'text':
+		case 'notebook':
+			await openUri(tab.uri, tab.label, {
+				background: options == null ? !tab.active : false,
+				preserveFocus: options?.preserveFocus ?? !(tab.active && tab.groupActive),
+				preview: options?.preview ?? tab.preview,
+				viewColumn: options?.viewColumn ?? tab.column,
+			});
+			break;
+		case 'custom':
+			await openCustomUri(tab.uri, tab.label, tab.id, {
+				background: options == null ? !tab.active : false,
+				preserveFocus: options?.preserveFocus ?? !(tab.active && tab.groupActive),
+				preview: options?.preview ?? tab.preview,
+				viewColumn: options?.viewColumn ?? tab.column,
+			});
+			break;
+		case 'diff':
+		case 'notebook-diff':
+			await openDiffUris(tab.uri, tab.original, tab.label, {
+				background: options == null ? !tab.active : false,
+				preserveFocus: options?.preserveFocus ?? !(tab.active && tab.groupActive),
+				preview: options?.preview ?? tab.preview,
+				viewColumn: options?.viewColumn ?? tab.column,
+			});
+			break;
+		case 'terminal':
+			await openTerminalTab(tab.label, {
+				preserveFocus: options?.preserveFocus ?? !(tab.active && tab.groupActive),
+				viewColumn: options?.viewColumn ?? tab.column,
+			});
+			break;
+		// case 'webview':
+		// 	await openWebview(tab);
+		// 	break;
+	}
 }
 
 export async function openTerminalTab(_label: string, options?: { preserveFocus?: boolean; viewColumn: ViewColumn }) {

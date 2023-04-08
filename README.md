@@ -4,37 +4,29 @@
 
 # Restore Editors
 
-Quickly save and restore all of the open editors.
+Quickly save, manage, and restore editor layouts.
 
-Editors are saved into a persisted per-folder "slot" for later retrieval. This basically means that saving the open editors for one opened folder, will not overwrite or interfere with saving/restoring/clearing editors in another opened folder.
+Saved editor layouts are persisted per-folder/workspace.
 
-> NOTE: Since VS Code doesn't yet support any API to access opened editors (see [vscode #15178](https://github.com/Microsoft/vscode/issues/15178)), this extension employs what amounts to a hack to gain access to them. As such there are many limitations in what can currently be saved and restored -- it is basically limited to only file-based text documents.
-
-![preview](https://raw.githubusercontent.com/eamodio/vscode-restore-editors/master/images/preview.gif)
+![preview](https://raw.githubusercontent.com/eamodio/vscode-restore-editors/main/images/preview.gif)
 
 ## Features
 
-- Adds a `Show Saved Editors` command (`restoreEditors.showQuickEditors`) with a shortcut of `ctrl+k ctrl+e` (`cmd+k cmd+e` on macOS) to show a quick pick menu of the currently saved editors
-
-  - Quickly see the set of saved editors; select an editor entry to open it
-  - Provides entries to `Save Opened Editors`, `Open Saved Editors` when available, and `Clear Saved Editors` when available
-  - Use the `alt+right arrow` shortcut on an entry to execute it without closing the quick pick menu
-
-- Adds a `Save Opened Editors` command (`restoreEditors.save`) to save all of the open editors
-
-- Adds a `Open Saved Editors` command (`restoreEditors.open`) to open previously saved editors
-
-- Adds a `Restore Only Saved Editors` command (`restoreEditors.restore`) to restore (close all, then re-open) previously saved editors
-
-- Adds a `Clear Saved Editors` command (`restoreEditors.clear`) to clear previously saved editors
+- Adds a _Saved Layouts_ view to the _Explorer_ side bar to manage all saved layouts for the current folder/workspace
+- Adds the following commands to the _Command Palette_:
+  - _Restore Editors: Save Current Layout..._ (`restoreEditors.save`) &mdash; saves the current editor layout
+  - _Restore Editors: Restore Saved Layout..._ (`restoreEditors.restore`) &mdash; closes all opened editors and restores the saved editor layout
+  - _Restore Editors: Replace Saved Layout..._ (`restoreEditors.replace`) &mdash; peplaces a saved editor layout with the current editor layout
+  - _Restore Editors: Rename Saved Layout..._ (`restoreEditors.rename`) &mdash; renames a saved editor layout
+  - _Restore Editors: Delete Saved Layout..._ (`restoreEditors.delete`) &mdash; deletes a saved editor layout
 
 ## Extension Settings
 
-| Name                         | Description                                                      |
-| ---------------------------- | ---------------------------------------------------------------- |
-| `restoreEditors.openPreview` | Specifies whether or not to open single editors in a preview tab |
+| Name                         | Description                                                                             |
+| ---------------------------- | --------------------------------------------------------------------------------------- |
+| `restoreEditors.outputLevel` | Specifies how much (if any) output will be sent to the _Restore Editors_ output channel |
 
 ## Known Issues
 
-- Many limitations as noted above
-- [#1](https://github.com/eamodio/vscode-restore-editors/issues/1) - Do you have to cycle through the tabs?
+- Cannot restore webviews &mdash; not supported by the VS Code API
+- Cannot properly restore terminals &mdash; not supported by the VS Code API

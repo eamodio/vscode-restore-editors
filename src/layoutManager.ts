@@ -1,5 +1,7 @@
-import type { Disposable, TextDocumentShowOptions } from 'vscode';
+import type { Disposable, Event } from 'vscode';
 import {
+	EventEmitter,
+	extensions,
 	TabInputCustom,
 	TabInputNotebook,
 	TabInputNotebookDiff,
@@ -9,34 +11,137 @@ import {
 	TabInputWebview,
 	window,
 } from 'vscode';
+import { uuid } from '@env/crypto';
+import type { GitExtension } from './@types/vscode.git';
 import type { Container } from './container';
-import type { Storage, StoredLayout, StoredTab, StoredTabCommon } from './storage';
+import type { Layout, LayoutDescriptor, Layouts, Storage, StoredTab, StoredTabCommon } from './storage';
 import { executeCoreCommand } from './system/command';
-import { log } from './system/decorators/log';
+import { debug, log } from './system/decorators/log';
 import { Logger } from './system/logger';
 import { getLogScope } from './system/logger.scope';
-import { openCustomUri, openDiffUris, openTerminalTab, openUri } from './system/utils';
+import { updateRecordValue } from './system/object';
+import { openTab } from './system/utils';
 
 export class LayoutManager implements Disposable {
+	private _onDidChange = new EventEmitter<void>();
+	get onDidChange(): Event<void> {
+		return this._onDidChange.event;
+	}
+
 	constructor(private readonly container: Container, private readonly storage: Storage) {}
 
 	dispose() {}
 
-	clear() {
-		return this.storage.deleteWorkspace('layout');
+	@debug()
+	get(id: string): Layout | undefined {
+		const stored = this.storage.getWorkspace(`layout:${id}`);
+		return stored?.data;
 	}
 
-	get(): StoredLayout | undefined {
-		const layout = this.storage.getWorkspace('layout');
-		return layout;
+	@debug()
+	getLayouts(): LayoutDescriptor[] {
+		const stored = this.storage.getWorkspace('layouts');
+		return stored?.data != null ? Object.values(stored.data) : [];
+	}
+
+	@debug()
+	getLayoutsById(): Layouts {
+		const stored = this.storage.getWorkspace('layouts');
+		return stored?.data ?? {};
+	}
+
+	@debug()
+	getDescriptor(id: string): LayoutDescriptor | undefined {
+		const stored = this.storage.getWorkspace('layouts');
+		return stored?.data?.[id];
 	}
 
 	@log()
-	async restore() {
+	async delete(id: string) {
+		const scope = getLogScope();
+
+		const descriptor = this.getDescriptor(id);
+		if (descriptor == null) return;
+
+		const confirm = { title: 'Delete' };
+		const cancel = { title: 'Cancel', isCloseAffordance: true };
+		const result = await window.showWarningMessage(
+			`Are you sure you want to delete the layout "${descriptor.label}"?`,
+			{ modal: true },
+			confirm,
+			cancel,
+		);
+		if (result !== confirm) return;
+
+		try {
+			await this.storage.deleteWorkspace(`layout:${id}`);
+
+			const stored = this.storage.getWorkspace('layouts');
+			if (stored != null) {
+				stored.data = updateRecordValue<LayoutDescriptor>(stored.data, id, undefined);
+				await this.storage.storeWorkspace('layouts', stored);
+			}
+
+			this._onDidChange.fire();
+		} catch (ex) {
+			debugger;
+			Logger.error(ex, scope);
+		}
+	}
+
+	@log()
+	async deleteTab(id: string, tab: StoredTab) {
 		const scope = getLogScope();
 
 		try {
-			const layout = this.get();
+			const stored = this.storage.getWorkspace(`layout:${id}`);
+			if (stored == null) return;
+
+			stored.data.tabs = stored.data.tabs.filter(t => t !== tab);
+			await Promise.allSettled([
+				this.storage.storeWorkspace(`layout:${id}`, stored),
+				this.update(id, layout => (layout.tabs = stored.data.tabs.length)),
+			]);
+
+			this._onDidChange.fire();
+		} catch (ex) {
+			debugger;
+			Logger.error(ex, scope);
+		}
+	}
+
+	private async update(id: string, mutator: (layout: LayoutDescriptor) => void): Promise<void> {
+		const stored = this.storage.getWorkspace('layouts');
+		if (stored == null) return;
+
+		const layout = stored.data[id];
+		if (layout == null) return;
+
+		mutator(layout);
+		layout.timestamp = Date.now();
+		await this.storage.storeWorkspace('layouts', stored);
+	}
+
+	@log()
+	async rename(id: string, label: string) {
+		const scope = getLogScope();
+
+		try {
+			await this.update(id, layout => (layout.label = label));
+
+			this._onDidChange.fire();
+		} catch (ex) {
+			debugger;
+			Logger.error(ex, scope);
+		}
+	}
+
+	@log()
+	async restore(id: string) {
+		const scope = getLogScope();
+
+		try {
+			const layout = this.get(id);
 			if (!layout?.tabs.length) return;
 
 			// Close all opened documents
@@ -65,10 +170,33 @@ export class LayoutManager implements Disposable {
 		}
 	}
 
-	async save() {
+	async save(label: string): Promise<void>;
+	async save(descriptor: LayoutDescriptor): Promise<void>;
+	@log()
+	async save(labelOrDescriptor: string | LayoutDescriptor): Promise<void> {
+		const scope = getLogScope();
+
+		// Get current branch from the Git extension
+		// TODO@eamodio support remote repositories
+		const repositories = extensions.getExtension<GitExtension>('vscode.git')?.exports.getAPI(1)?.repositories;
+		const branch = repositories?.length === 1 ? repositories[0].state.HEAD?.name : undefined;
+
 		try {
-			const data: Partial<StoredLayout> = {
-				v: 1,
+			let descriptor: LayoutDescriptor;
+			if (typeof labelOrDescriptor === 'string') {
+				descriptor = {
+					id: uuid(),
+					label: labelOrDescriptor,
+					context: undefined,
+					tabs: 0,
+					timestamp: undefined!,
+				};
+			} else {
+				descriptor = labelOrDescriptor;
+			}
+
+			const data: Layout = {
+				id: descriptor.id,
 				tabs: [],
 			};
 
@@ -88,40 +216,40 @@ export class LayoutManager implements Disposable {
 					};
 
 					if (input instanceof TabInputText) {
-						data.tabs!.push({
+						data.tabs.push({
 							...common,
 							type: 'text',
 							uri: input.uri.toString(),
 						});
 					} else if (input instanceof TabInputTextDiff) {
-						data.tabs!.push({
+						data.tabs.push({
 							...common,
 							type: 'diff',
 							uri: input.modified.toString(),
 							original: input.original.toString(),
 						});
 					} else if (input instanceof TabInputCustom) {
-						data.tabs!.push({
+						data.tabs.push({
 							...common,
 							type: 'custom',
 							id: input.viewType,
 							uri: input.uri.toString(),
 						});
 					} else if (input instanceof TabInputWebview) {
-						data.tabs!.push({
+						data.tabs.push({
 							...common,
 							type: 'webview',
 							id: input.viewType,
 						});
 					} else if (input instanceof TabInputNotebook) {
-						data.tabs!.push({
+						data.tabs.push({
 							...common,
 							type: 'notebook',
 							id: input.notebookType,
 							uri: input.uri.toString(),
 						});
 					} else if (input instanceof TabInputNotebookDiff) {
-						data.tabs!.push({
+						data.tabs.push({
 							...common,
 							type: 'notebook-diff',
 							id: input.notebookType,
@@ -129,7 +257,7 @@ export class LayoutManager implements Disposable {
 							original: input.original.toString(),
 						});
 					} else if (input instanceof TabInputTerminal) {
-						data.tabs!.push({
+						data.tabs.push({
 							...common,
 							type: 'terminal',
 						});
@@ -140,49 +268,24 @@ export class LayoutManager implements Disposable {
 			}
 
 			data.editorLayout = await executeCoreCommand('vscode.getEditorLayout');
-			await this.storage.storeWorkspace('layout', data);
-		} catch (ex) {
-			Logger.error(ex, 'DocumentManager.save');
-		}
-	}
-}
 
-export async function openTab(tab: StoredTab, options?: TextDocumentShowOptions) {
-	switch (tab.type) {
-		case 'text':
-		case 'notebook':
-			await openUri(tab.uri, tab.label, {
-				background: options == null ? !tab.active : false,
-				preserveFocus: options?.preserveFocus ?? !(tab.active && tab.groupActive),
-				preview: options?.preview ?? tab.preview,
-				viewColumn: options?.viewColumn ?? tab.column,
+			const stored = this.storage.getWorkspace('layouts') ?? { v: 1, data: undefined! };
+			stored.data = updateRecordValue<LayoutDescriptor>(stored.data, descriptor.id, {
+				...descriptor,
+				context: branch,
+				tabs: data.tabs.length,
+				timestamp: Date.now(),
 			});
-			break;
-		case 'custom':
-			await openCustomUri(tab.uri, tab.label, tab.id, {
-				background: options == null ? !tab.active : false,
-				preserveFocus: options?.preserveFocus ?? !(tab.active && tab.groupActive),
-				preview: options?.preview ?? tab.preview,
-				viewColumn: options?.viewColumn ?? tab.column,
-			});
-			break;
-		case 'diff':
-		case 'notebook-diff':
-			await openDiffUris(tab.uri, tab.original, tab.label, {
-				background: options == null ? !tab.active : false,
-				preserveFocus: options?.preserveFocus ?? !(tab.active && tab.groupActive),
-				preview: options?.preview ?? tab.preview,
-				viewColumn: options?.viewColumn ?? tab.column,
-			});
-			break;
-		case 'terminal':
-			await openTerminalTab(tab.label, {
-				preserveFocus: options?.preserveFocus ?? !(tab.active && tab.groupActive),
-				viewColumn: options?.viewColumn ?? tab.column,
-			});
-			break;
-		// case 'webview':
-		// 	await openWebview(tab);
-		// 	break;
+
+			await Promise.allSettled([
+				this.storage.storeWorkspace(`layout:${descriptor.id}`, { v: 1, data: data }),
+				this.storage.storeWorkspace('layouts', stored),
+			]);
+
+			this._onDidChange.fire();
+		} catch (ex) {
+			debugger;
+			Logger.error(ex, scope);
+		}
 	}
 }

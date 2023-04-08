@@ -1,11 +1,14 @@
 import type { ConfigurationChangeEvent, ExtensionContext } from 'vscode';
+import { ExtensionMode } from 'vscode';
 import { CommandProvider } from './commands';
 import { fromOutputLevel } from './config';
 import { LayoutManager } from './layoutManager';
 import { Storage } from './storage';
 import { configuration } from './system/configuration';
+import { memoize } from './system/decorators/memoize';
 import { Keyboard } from './system/keyboard';
 import { Logger } from './system/logger';
+import { LayoutsView } from './views/layoutsView';
 
 export class Container {
 	static #instance: Container | undefined;
@@ -43,11 +46,18 @@ export class Container {
 
 		context.subscriptions.unshift(new CommandProvider(this));
 		context.subscriptions.unshift(configuration.onDidChangeAny(this.onAnyConfigurationChanged, this));
+
+		context.subscriptions.unshift(new LayoutsView(this));
 	}
 
 	private _context: ExtensionContext;
 	get context() {
 		return this._context;
+	}
+
+	@memoize()
+	get debugging() {
+		return this._context.extensionMode === ExtensionMode.Development;
 	}
 
 	private _keyboard: Keyboard;
@@ -70,4 +80,8 @@ export class Container {
 			Logger.logLevel = fromOutputLevel(configuration.get('outputLevel'));
 		}
 	}
+}
+
+export function isContainer(container: any): container is Container {
+	return container instanceof Container;
 }

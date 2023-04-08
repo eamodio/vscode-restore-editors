@@ -20,7 +20,7 @@ export interface CommandOptions {
 }
 
 export interface Command {
-	name: Commands;
+	name: keyof Commands;
 	key: string;
 	method: CommandCallback;
 	options?: CommandOptions;

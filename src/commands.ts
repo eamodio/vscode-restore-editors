@@ -1,6 +1,6 @@
 import { Disposable } from 'vscode';
 import type { Container } from './container';
-import { showTabsQuickPick } from './quickPicks/tabs';
+import { showLayoutNameInput, showLayoutPicker } from './pickers/layoutPicker';
 import { registerCommand } from './system/command';
 import type { Command } from './system/decorators/command';
 import { createCommandDecorator } from './system/decorators/command';
@@ -21,29 +21,100 @@ export class CommandProvider implements Disposable {
 		this._disposable.dispose();
 	}
 
-	@command('clear')
-	clear() {
-		return this.container.layoutManager.clear();
+	@command('delete')
+	async delete(id?: string) {
+		if (id == null) {
+			const pick = await this.showLayoutPicker({
+				title: 'Delete Saved Layout',
+				placeholder: 'Choose a saved layout to delete',
+			});
+			if (pick == null) return;
+
+			id = pick.id;
+		}
+		return this.container.layoutManager.delete(id);
 	}
 
-	@command('openSavedTab')
-	async openSavedTab() {
-		const layout = this.container.layoutManager.get();
-		if (layout == null) return;
+	@command('replace')
+	async replace(id?: string) {
+		if (id == null) {
+			const pick = await this.showLayoutPicker({
+				title: 'Replace Saved Layout',
+				placeholder: 'Choose a saved layout to replace',
+			});
+			if (pick == null) return;
 
-		const pick = await showTabsQuickPick(this.container, layout.tabs);
-		return pick?.execute();
+			id = pick.id;
+		}
+
+		const descriptor = this.container.layoutManager.getDescriptor(id);
+		if (descriptor == null) return;
+
+		return this.container.layoutManager.save(descriptor);
+	}
+
+	@command('rename')
+	async rename(id?: string, label?: string) {
+		if (id == null) {
+			const pick = await this.showLayoutPicker({
+				title: 'Rename Saved Layout',
+				placeholder: 'Choose a saved layout to rename',
+			});
+			if (pick == null) return;
+
+			id = pick.id;
+		}
+
+		if (label == null) {
+			const layouts = this.container.layoutManager.getLayoutsById();
+
+			label = await showLayoutNameInput({
+				title: 'Rename Saved Layout',
+				prompt: 'Enter a new name for the layout',
+				value: layouts[id]?.label,
+				existing: Object.values(layouts)
+					.filter(l => l.id !== id)
+					.map(l => l.label),
+			});
+			if (label == null) return;
+		}
+		return this.container.layoutManager.rename(id, label);
 	}
 
 	@command('restore', {
 		showErrorMessage: 'Unable to restore the layout. See output channel for more details',
 	})
-	restore() {
-		return this.container.layoutManager.restore();
+	async restore(id?: string) {
+		if (id == null) {
+			const pick = await this.showLayoutPicker({
+				title: 'Restore Saved Layout',
+				placeholder: 'Choose a saved layout to restore',
+			});
+			if (pick == null) return;
+
+			id = pick.id;
+		}
+		return this.container.layoutManager.restore(id);
 	}
 
 	@command('save')
-	save() {
-		return this.container.layoutManager.save();
+	async save(label?: string) {
+		if (label == null) {
+			label = await showLayoutNameInput({
+				title: 'Save Layout',
+				prompt: 'Enter a name for the layout',
+				existing: this.container.layoutManager.getLayouts().map(l => l.label),
+			});
+			if (label == null) return;
+		}
+		return this.container.layoutManager.save(label);
+	}
+
+	private async showLayoutPicker(options?: { placeholder?: string; title?: string }) {
+		const layouts = this.container.layoutManager.getLayouts().sort((a, b) => b.timestamp - a.timestamp);
+		if (!layouts.length) return undefined;
+
+		const pick = await showLayoutPicker(layouts, { ...options, autoPick: false });
+		return pick;
 	}
 }

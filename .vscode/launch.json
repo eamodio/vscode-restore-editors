@@ -7,7 +7,7 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
-			"args": ["--extensionDevelopmentPath=${workspaceFolder}"],
+			"args": ["--profile=DBG", "--extensionDevelopmentPath=${workspaceFolder}"],
 			"outFiles": ["${workspaceFolder}/dist/**/*.js"],
 			"presentation": {
 				"group": "2_run",
@@ -24,7 +24,7 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
-			"args": ["--extensionDevelopmentPath=${workspaceFolder}"],
+			"args": ["--profile=DBG", "--extensionDevelopmentPath=${workspaceFolder}"],
 			"outFiles": ["${workspaceFolder}/dist/**/*.js"],
 			"pauseForSourceMap": true,
 			"preLaunchTask": "${defaultBuildTask}",
