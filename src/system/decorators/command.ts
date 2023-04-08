@@ -1,16 +1,16 @@
 import type { MessageItem } from 'vscode';
 import { window } from 'vscode';
-import type { Commands, CommandsUnqualified } from '../../constants';
+import type { Commands, UnqualifiedPaletteCommands } from '../../constants';
 import { extensionPrefix } from '../../constants';
 import { Logger } from '../logger';
 import { LogLevel } from '../logger.constants';
 
-type CommandCallback = (this: any, ...args: any[]) => any;
+type CommandCallback<T extends keyof Commands> = (this: any, ...args: Commands[T]) => any;
 
-export function createCommandDecorator(
-	registry: Command[],
-): (command: CommandsUnqualified, options?: CommandOptions) => CommandCallback {
-	return (command: CommandsUnqualified, options?: CommandOptions) => _command(registry, command, options);
+export function createCommandDecorator<T extends UnqualifiedPaletteCommands>(
+	registry: Command<`${typeof extensionPrefix}.${T}`>[],
+): (command: T, options?: CommandOptions) => (this: any, ...args: any[]) => any {
+	return (command: T, options?: CommandOptions) => _command<T>(registry, command, options);
 }
 
 export interface CommandOptions {
@@ -19,16 +19,20 @@ export interface CommandOptions {
 	showErrorMessage?: string;
 }
 
-export interface Command {
-	name: keyof Commands;
+export interface Command<T extends keyof Commands> {
+	name: T;
 	key: string;
-	method: CommandCallback;
+	method: CommandCallback<T>;
 	options?: CommandOptions;
 }
 
-function _command(registry: Command[], command: CommandsUnqualified, options?: CommandOptions): CommandCallback {
-	return (_target: any, key: string, descriptor: any) => {
-		if (!(typeof descriptor.value === 'function')) throw new Error('not supported');
+function _command<T extends UnqualifiedPaletteCommands>(
+	registry: Command<`${typeof extensionPrefix}.${T}`>[],
+	command: T,
+	options?: CommandOptions,
+) {
+	return (_target: any, key: string, descriptor: PropertyDescriptor) => {
+		if (typeof descriptor.value !== 'function') throw new Error('not supported');
 
 		let method;
 		if (!options?.customErrorHandling) {

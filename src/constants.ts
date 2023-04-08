@@ -3,13 +3,17 @@ import type { LayoutNode, LayoutsView, LayoutTabNode } from './views/layoutsView
 
 export const extensionPrefix = 'restoreEditors';
 
-type StripPrefix<T extends string, S extends '.' | ':'> = T extends `${typeof extensionPrefix}${S}${infer U}`
-	? U
-	: never;
+type StripPrefix<Key extends string, Prefix extends string> = Key extends `${Prefix}${infer Rest}` ? Rest : never;
 
-type StripViewPrefix<T extends string> = T extends `${ViewIds}.${infer U}` ? U : never;
+export type PaletteCommands = {
+	'restoreEditors.delete': [] | [string | undefined];
+	'restoreEditors.rename': [] | [string | undefined] | [string, string];
+	'restoreEditors.replace': [] | [string | undefined];
+	'restoreEditors.restore': [] | [string | undefined];
+	'restoreEditors.save': [] | [string | undefined];
+};
 
-export type Commands = {
+export type Commands = PaletteCommands & {
 	'restoreEditors.views.layouts.save': [] | [LayoutNode | undefined];
 	'restoreEditors.views.layouts.layout.delete': [LayoutNode];
 	'restoreEditors.views.layouts.layout.rename': [LayoutNode];
@@ -18,21 +22,16 @@ export type Commands = {
 	'restoreEditors.views.layouts.tab.delete': [LayoutTabNode];
 	'restoreEditors.views.layouts.tab.preview': [LayoutTabNode];
 	'restoreEditors.views.layouts.tab.restore': [LayoutTabNode];
-	'restoreEditors.delete': [] | [string | undefined];
-	'restoreEditors.rename': [] | [string | undefined] | [string, string];
-	'restoreEditors.replace': [] | [string | undefined];
-	'restoreEditors.restore': [] | [string | undefined];
-	'restoreEditors.save': [] | [string | undefined];
 } & {
-	[key in `${ViewIds}.focus`]: [] | [TextDocumentShowOptions | undefined];
+	[Key in `${ViewIds}.focus`]: [] | [TextDocumentShowOptions | undefined];
 } & {
-	[key in `${ViewIds}.${'refresh' | 'resetLocation'}`]: [];
+	[Key in `${ViewIds}.${'refresh' | 'resetLocation'}`]: [];
 } & {
-	[key in `${typeof extensionPrefix}.key.${Keys}`]: [];
+	[Key in `${typeof extensionPrefix}.key.${Keys}`]: [];
 };
 
-export type CommandsUnqualified = StripPrefix<keyof Commands, '.'>;
-export type ViewCommandsUnqualified = StripViewPrefix<keyof Commands>;
+export type UnqualifiedPaletteCommands = StripPrefix<keyof PaletteCommands, 'restoreEditors.'>;
+export type UnqualifiedViewCommands = StripPrefix<keyof Commands, `${ViewIds}.`>;
 
 export type ContextKeys = `${typeof extensionPrefix}:key:${Keys}`;
 
