@@ -1,6 +1,7 @@
 import type {
 	CancellationToken,
 	ConfigurationChangeEvent,
+	Disposable,
 	Event,
 	TreeDataProvider,
 	TreeItem,
@@ -9,18 +10,17 @@ import type {
 	TreeViewSelectionChangeEvent,
 	TreeViewVisibilityChangeEvent,
 } from 'vscode';
-import { Disposable, EventEmitter, MarkdownString, TreeItemCollapsibleState, window } from 'vscode';
-import type { View, ViewIds } from '../constants';
+import { EventEmitter, MarkdownString, TreeItemCollapsibleState, window } from 'vscode';
+import type { ViewIds } from '../constants';
 import type { Container } from '../container';
 import { executeCommand } from '../system/command';
 import { configuration } from '../system/configuration';
 import { debug, log } from '../system/decorators/log';
-import { debounce, is as isA } from '../system/function';
+import { debounce } from '../system/function';
 import { Logger } from '../system/logger';
 import { getLogScope } from '../system/logger.scope';
-import { cancellable, isPromise } from '../system/promise';
-import type { PageableViewNode, ViewNode } from './viewNode';
-import { isPageableViewNode } from './viewNode';
+import { isPromise } from '../system/promise';
+import type { ViewNode } from './viewNode';
 
 export interface TreeViewNodeCollapsibleStateChangeEvent<T> extends TreeViewExpansionEvent<T> {
 	state: TreeItemCollapsibleState;
@@ -50,8 +50,6 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 	protected disposables: Disposable[] = [];
 	protected root: RootNode | undefined;
 	protected tree: TreeView<ViewNode> | undefined;
-
-	private readonly _lastKnownLimits = new Map<string, number | undefined>();
 
 	constructor(public readonly container: Container, public readonly id: ViewIds, public readonly name: string) {
 		if (this.container.debugging) {
@@ -103,9 +101,7 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 	}
 
 	dispose() {
-		this._nodeState?.dispose();
-		this._nodeState = undefined;
-		Disposable.from(...this.disposables).dispose();
+		this.disposables.forEach(d => void d.dispose());
 	}
 
 	get canReveal(): boolean {
@@ -116,30 +112,13 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 		return false;
 	}
 
-	private _nodeState: ViewNodeState | undefined;
-	get nodeState(): ViewNodeState {
-		if (this._nodeState == null) {
-			this._nodeState = new ViewNodeState();
-		}
-
-		return this._nodeState;
-	}
-
 	protected get showCollapseAll(): boolean {
 		return true;
 	}
 
 	protected filterConfigurationChanged(_e: ConfigurationChangeEvent) {
 		// if (!configuration.changed(e, 'views')) return false;
-
-		// if (configuration.changed(e, `views.${this.configKey}` as const)) return true;
-		// for (const key of viewsCommonConfigKeys) {
-		// 	if (configuration.changed(e, `views.${key}` as const)) return true;
-		// }
-
-		// return false;
-
-		return true;
+		return false;
 	}
 
 	private _title: string | undefined;
@@ -270,7 +249,6 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 	async findNode(
 		id: string,
 		options?: {
-			allowPaging?: boolean;
 			canTraverse?: (node: ViewNode) => boolean | Promise<boolean>;
 			maxDepth?: number;
 			token?: CancellationToken;
@@ -279,7 +257,6 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 	async findNode(
 		predicate: (node: ViewNode) => boolean,
 		options?: {
-			allowPaging?: boolean;
 			canTraverse?: (node: ViewNode) => boolean | Promise<boolean>;
 			maxDepth?: number;
 			token?: CancellationToken;
@@ -288,34 +265,27 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 	@log<ViewBase<RootNode>['findNode']>({
 		args: {
 			0: predicate => (typeof predicate === 'string' ? predicate : '<function>'),
-			1: opts => `options=${JSON.stringify({ ...opts, canTraverse: undefined, token: undefined })}`,
+			1: opts => JSON.stringify(opts),
 		},
 	})
 	async findNode(
 		predicate: string | ((node: ViewNode) => boolean),
-		{
-			allowPaging = false,
-			canTraverse,
-			maxDepth = 2,
-			token,
-		}: {
-			allowPaging?: boolean;
+		options?: {
 			canTraverse?: (node: ViewNode) => boolean | Promise<boolean>;
 			maxDepth?: number;
 			token?: CancellationToken;
-		} = {},
+		},
 	): Promise<ViewNode | undefined> {
 		const scope = getLogScope();
 
 		async function find(this: ViewBase<RootNode>) {
 			try {
-				const node = await this.findNodeCoreBFS(
+				const node = await findNodeCoreBFS(
 					typeof predicate === 'string' ? n => n.id === predicate : predicate,
 					this.ensureRoot(),
-					allowPaging,
-					canTraverse,
-					maxDepth,
-					token,
+					options?.canTraverse,
+					options?.maxDepth ?? 2,
+					options?.token,
 				);
 
 				return node;
@@ -331,83 +301,6 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 		await this.show({ preserveFocus: true });
 		// Since we have to show the view, give the view time to load and let the callstack unwind before we try to find the node
 		return new Promise<ViewNode | undefined>(resolve => setTimeout(() => resolve(find.call(this)), 100));
-	}
-
-	private async findNodeCoreBFS(
-		predicate: (node: ViewNode) => boolean,
-		root: ViewNode,
-		allowPaging: boolean,
-		canTraverse: ((node: ViewNode) => boolean | Promise<boolean>) | undefined,
-		maxDepth: number,
-		token: CancellationToken | undefined,
-	): Promise<ViewNode | undefined> {
-		const queue: (ViewNode | undefined)[] = [root, undefined];
-
-		const defaultPageSize = 20; //configuration.get('advanced.maxListItems');
-
-		let depth = 0;
-		let node: ViewNode | undefined;
-		let children: ViewNode[];
-		let pagedChildren: ViewNode[];
-		while (queue.length > 1) {
-			if (token?.isCancellationRequested) return undefined;
-
-			node = queue.shift();
-			if (node == null) {
-				depth++;
-
-				queue.push(undefined);
-				if (depth > maxDepth) break;
-
-				continue;
-			}
-
-			if (predicate(node)) return node;
-			if (canTraverse != null) {
-				const traversable = canTraverse(node);
-				if (isPromise(traversable)) {
-					if (!(await traversable)) continue;
-				} else if (!traversable) {
-					continue;
-				}
-			}
-
-			children = await node.getChildren();
-			if (children.length === 0) continue;
-
-			while (node != null && !isPageableViewNode(node)) {
-				node = await node.getSplattedChild?.();
-			}
-
-			if (node != null && isPageableViewNode(node)) {
-				let child = children.find(predicate);
-				if (child != null) return child;
-
-				if (allowPaging && node.hasMore) {
-					while (true) {
-						if (token?.isCancellationRequested) return undefined;
-
-						await this.loadMoreNodeChildren(node, defaultPageSize);
-
-						pagedChildren = await cancellable(Promise.resolve(node.getChildren()), token ?? 60000, {
-							onDidCancel: resolve => resolve([]),
-						});
-
-						child = pagedChildren.find(predicate);
-						if (child != null) return child;
-
-						if (!node.hasMore) break;
-					}
-				}
-
-				// Don't traverse into paged children
-				continue;
-			}
-
-			queue.push(...children);
-		}
-
-		return undefined;
 	}
 
 	protected async ensureRevealNode(
@@ -440,11 +333,6 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 
 	@debug()
 	async refresh(reset: boolean = false) {
-		// If we are resetting, make sure to clear any saved node state
-		if (reset) {
-			this.nodeState.reset();
-		}
-
 		await this.root?.refresh?.(reset);
 
 		this.triggerNodeChange();
@@ -487,31 +375,6 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 		}
 	}
 
-	@debug<ViewBase<RootNode>['loadMoreNodeChildren']>({
-		args: { 0: n => n.toString(), 2: n => n?.toString() },
-	})
-	async loadMoreNodeChildren(
-		node: ViewNode & PageableViewNode,
-		limit: number | { until: string | undefined } | undefined,
-		previousNode?: ViewNode,
-		context?: Record<string, unknown>,
-	) {
-		if (previousNode != null) {
-			await this.reveal(previousNode, { select: true });
-		}
-
-		await node.loadMore(limit, context);
-		this._lastKnownLimits.set(node.id, node.limit);
-	}
-
-	@debug<ViewBase<RootNode>['resetNodeLastKnownLimit']>({
-		args: { 0: n => n.toString() },
-		singleLine: true,
-	})
-	resetNodeLastKnownLimit(node: PageableViewNode) {
-		this._lastKnownLimits.delete(node.id);
-	}
-
 	@debug<ViewBase<RootNode>['triggerNodeChange']>({ args: { 0: n => n?.toString() } })
 	triggerNodeChange(node?: ViewNode) {
 		// Since the root node won't actually refresh, force everything
@@ -519,49 +382,50 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 	}
 }
 
-export class ViewNodeState implements Disposable {
-	private _state: Map<string, Map<string, unknown>> | undefined;
+async function findNodeCoreBFS(
+	predicate: (node: ViewNode) => boolean,
+	root: ViewNode,
+	canTraverse: ((node: ViewNode) => boolean | Promise<boolean>) | undefined,
+	maxDepth: number,
+	token: CancellationToken | undefined,
+): Promise<ViewNode | undefined> {
+	const queue: (ViewNode | undefined)[] = [root, undefined];
 
-	dispose() {
-		this.reset();
-	}
+	let depth = 0;
+	let node: ViewNode | undefined;
+	let children: ViewNode[];
+	while (queue.length > 1) {
+		if (token?.isCancellationRequested) return undefined;
 
-	reset() {
-		this._state?.clear();
-		this._state = undefined;
-	}
+		node = queue.shift();
+		if (node == null) {
+			depth++;
 
-	deleteState(id: string, key?: string): void {
-		if (key == null) {
-			this._state?.delete(id);
-		} else {
-			this._state?.get(id)?.delete(key);
-		}
-	}
+			queue.push(undefined);
+			if (depth > maxDepth) break;
 
-	getState<T>(id: string, key: string): T | undefined {
-		return this._state?.get(id)?.get(key) as T | undefined;
-	}
-
-	storeState<T>(id: string, key: string, value: T): void {
-		if (this._state == null) {
-			this._state = new Map();
+			continue;
 		}
 
-		const state = this._state.get(id);
-		if (state != null) {
-			state.set(key, value);
-		} else {
-			this._state.set(id, new Map([[key, value]]));
+		if (predicate(node)) return node;
+		if (canTraverse != null) {
+			const traversable = canTraverse(node);
+			if (isPromise(traversable)) {
+				if (!(await traversable)) continue;
+			} else if (!traversable) {
+				continue;
+			}
 		}
+
+		children = await node.getChildren();
+		if (children.length === 0) continue;
+
+		while (node != null) {
+			node = await node.getSplattedChild?.();
+		}
+
+		queue.push(...children);
 	}
-}
 
-interface AutoRefreshableView {
-	autoRefresh: boolean;
-	onDidChangeAutoRefresh: Event<void>;
-}
-
-export function canAutoRefreshView(view: View): view is View & AutoRefreshableView {
-	return isA<View & AutoRefreshableView>(view, 'onDidChangeAutoRefresh');
+	return undefined;
 }
