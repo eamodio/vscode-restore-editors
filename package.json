@@ -50,7 +50,9 @@
 		"tabs",
 		"open"
 	],
-	"activationEvents": [],
+	"activationEvents": [
+		"onView:viewId:restoreEditors.views.layouts"
+	],
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"supported": true
