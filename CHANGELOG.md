@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [Unreleased]
 
+## [1.0.1] - 2023-04-08
+
+### Fixed
+
+- Fixes missing activation event
+
 ## [1.0.0] - 2023-04-08
 
 ### Added
@@ -65,5 +71,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 - Initial release
 
-[unreleased]: https://github.com/eamodio/vscode-restore-editors/compare/v1.0.0...HEAD
+[unreleased]: https://github.com/eamodio/vscode-restore-editors/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/eamodio/vscode-restore-editors/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/eamodio/vscode-restore-editors/compare/v0.2.1...v1.0.0

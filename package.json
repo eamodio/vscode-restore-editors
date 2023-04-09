@@ -2,7 +2,7 @@
 	"name": "restore-editors",
 	"displayName": "Restore Editors",
 	"description": "Quickly save, manage, and restore editor layouts",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"engines": {
 		"vscode": "^1.76.0"
 	},
