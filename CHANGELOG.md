@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [Unreleased]
 
+## [1.0.0] - 2023-04-08
+
 ### Added
 
 - Completely rewrote the extension to save, manage, and restore editor layouts
@@ -63,4 +65,5 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 - Initial release
 
-[unreleased]: https://github.com/eamodio/vscode-restore-editors/compare/v0.2.1...HEAD
+[unreleased]: https://github.com/eamodio/vscode-restore-editors/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/eamodio/vscode-restore-editors/compare/v0.2.1...v1.0.0
