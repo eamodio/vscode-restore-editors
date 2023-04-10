@@ -40,14 +40,20 @@ export class Container {
 	private constructor(context: ExtensionContext) {
 		this._context = context;
 
-		context.subscriptions.unshift((this._storage = new Storage(context)));
-		context.subscriptions.unshift((this._keyboard = new Keyboard()));
-		context.subscriptions.unshift((this._layoutManager = new LayoutManager(this, this._storage)));
+		const disposables = [
+			(this._storage = new Storage(context)),
+			(this._keyboard = new Keyboard()),
+			(this._layoutManager = new LayoutManager(this, this._storage)),
+			new CommandProvider(this),
+			new LayoutsView(this),
+			configuration.onDidChangeAny(this.onAnyConfigurationChanged, this),
+		];
 
-		context.subscriptions.unshift(new CommandProvider(this));
-		context.subscriptions.unshift(configuration.onDidChangeAny(this.onAnyConfigurationChanged, this));
-
-		context.subscriptions.unshift(new LayoutsView(this));
+		context.subscriptions.push({
+			dispose: function () {
+				disposables.reverse().forEach(d => void d.dispose());
+			},
+		});
 	}
 
 	private _context: ExtensionContext;
