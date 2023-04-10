@@ -60,11 +60,6 @@ export const keys = [
 ] as const;
 export type Keys = (typeof keys)[number];
 
-export const enum ContextValues {
-	Layout = 'restoreEditors:layout',
-	LayoutTab = 'restoreEditors:layout:tab',
-}
-
 export type SecretKeys = never;
 
 export type DeprecatedGlobalStorage = object;
@@ -172,3 +167,8 @@ export type Layouts = Record<string, LayoutDescriptor>;
 export type View = LayoutsView;
 
 export type ViewIds = `${typeof extensionPrefix}.views.layouts`;
+
+export const enum ViewItemContextValues {
+	Layout = 'restoreEditors:layout',
+	LayoutTab = 'restoreEditors:layout:tab',
+}

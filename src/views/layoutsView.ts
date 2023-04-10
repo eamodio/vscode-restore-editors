@@ -1,7 +1,7 @@
 import type { Disposable } from 'vscode';
 import { ThemeIcon, TreeItem, TreeItemCollapsibleState, Uri, ViewColumn, workspace } from 'vscode';
 import type { LayoutDescriptor, StoredTab } from '../constants';
-import { ContextValues } from '../constants';
+import { ViewItemContextValues } from '../constants';
 import type { Container } from '../container';
 import { createViewCommand, executeCommand, registerViewCommand } from '../system/command';
 import { fromNow } from '../system/date';
@@ -27,7 +27,7 @@ export class LayoutTabNode extends ViewNode {
 
 	getTreeItem(): TreeItem {
 		const item = new TreeItem(this.tab.label, TreeItemCollapsibleState.None);
-		item.contextValue = ContextValues.LayoutTab;
+		item.contextValue = ViewItemContextValues.LayoutTab;
 		switch (this.tab.type) {
 			case 'text':
 			case 'custom':
@@ -86,7 +86,7 @@ export class LayoutNode extends ViewNode {
 		const { layout } = this;
 
 		const item = new TreeItem(layout.label, TreeItemCollapsibleState.Collapsed);
-		item.contextValue = ContextValues.Layout;
+		item.contextValue = ViewItemContextValues.Layout;
 		item.description = `${pluralize('tab', layout.tabs)}${
 			layout.context ? ` on ${layout.context}` : ''
 		} \u00a0\u2022\u00a0 ${fromNow(layout.timestamp)}`;
