@@ -351,7 +351,7 @@
 		"rebuild": "yarn run reset && yarn run build",
 		"reset": "yarn run clean && yarn --frozen-lockfile",
 		"watch": "webpack --watch --mode development",
-		"web": "vscode-test-web --extensionDevelopmentPath=. --folder-uri=vscode-vfs://github/eamodio/vscode-find-related",
+		"web": "vscode-test-web --extensionDevelopmentPath=. --folder-uri=vscode-vfs://github/eamodio/vscode-restore-editors",
 		"web:serve": "npx serve --cors -l 5000",
 		"web:tunnel": "npx localtunnel -p 5000",
 		"update-dts": "pushd \"src/@types\" && npx vscode-dts dev && popd",

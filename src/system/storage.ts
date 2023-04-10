@@ -1,7 +1,14 @@
-import type { Disposable, Event, ExtensionContext, SecretStorageChangeEvent, ViewColumn } from 'vscode';
+import type { Disposable, Event, ExtensionContext, SecretStorageChangeEvent } from 'vscode';
 import { EventEmitter } from 'vscode';
-import { extensionPrefix } from './constants';
-import { debug } from './system/decorators/log';
+import type {
+	DeprecatedGlobalStorage,
+	DeprecatedWorkspaceStorage,
+	GlobalStorage,
+	SecretKeys,
+	WorkspaceStorage,
+} from '../constants';
+import { extensionPrefix } from '../constants';
+import { debug } from './decorators/log';
 
 export type StorageChangeEvent =
 	| {
@@ -105,107 +112,3 @@ export class Storage implements Disposable {
 		this._onDidChange.fire({ key: key, workspace: true });
 	}
 }
-
-export type SecretKeys = never;
-
-export type DeprecatedGlobalStorage = object;
-
-export type GlobalStorage = object;
-
-export type DeprecatedWorkspaceStorage = {
-	/** @deprecated use `layouts` */
-	documents: Record<string, any>;
-};
-
-export type WorkspaceStorage =
-	| {
-			layouts: Stored<Layouts>;
-	  } & { [key in `layout:${string}`]: Stored<Layout> };
-
-export interface Stored<T, SchemaVersion extends number = 1> {
-	v: SchemaVersion;
-	data: T;
-}
-
-export interface StoredTabCommon {
-	label: string;
-
-	active: boolean;
-	groupActive: boolean;
-	preview: boolean;
-	column: ViewColumn;
-	order: number;
-}
-
-export interface StoredTextTab extends StoredTabCommon {
-	type: 'text';
-	uri: string;
-}
-
-export interface StoredTextDiffTab extends StoredTabCommon {
-	type: 'diff';
-	uri: string;
-	original: string;
-}
-
-export interface StoredCustomTab extends StoredTabCommon {
-	type: 'custom';
-	id: string;
-	uri: string;
-}
-
-export interface StoredWebviewTab extends StoredTabCommon {
-	type: 'webview';
-	id: string;
-}
-
-export interface StoredNotebookTab extends StoredTabCommon {
-	type: 'notebook';
-	id: string;
-	uri: string;
-}
-export interface StoredNotebookDiffTab extends StoredTabCommon {
-	type: 'notebook-diff';
-	id: string;
-	uri: string;
-	original: string;
-}
-
-export interface StoredTerminalTab extends StoredTabCommon {
-	type: 'terminal';
-}
-
-export type StoredTab =
-	| StoredTextTab
-	| StoredTextDiffTab
-	| StoredCustomTab
-	| StoredWebviewTab
-	| StoredNotebookTab
-	| StoredNotebookDiffTab
-	| StoredTerminalTab;
-
-type EditorLayoutGroup = {
-	groups?: EditorLayoutGroup[];
-	size: number;
-};
-
-export interface LayoutDescriptor {
-	id: string;
-	label: string;
-
-	context: string | undefined;
-	tabs: number;
-	timestamp: number;
-}
-
-export interface Layout {
-	id: string;
-
-	editorLayout?: {
-		groups?: EditorLayoutGroup[];
-		orientation: 0 | 1;
-	};
-	tabs: StoredTab[];
-}
-
-export type Layouts = Record<string, LayoutDescriptor>;

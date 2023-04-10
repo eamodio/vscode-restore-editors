@@ -3,11 +3,11 @@ import { ExtensionMode } from 'vscode';
 import { CommandProvider } from './commands';
 import { fromOutputLevel } from './config';
 import { LayoutManager } from './layoutManager';
-import { Storage } from './storage';
 import { configuration } from './system/configuration';
 import { memoize } from './system/decorators/memoize';
 import { Keyboard } from './system/keyboard';
 import { Logger } from './system/logger';
+import { Storage } from './system/storage';
 import { LayoutsView } from './views/layoutsView';
 
 export class Container {

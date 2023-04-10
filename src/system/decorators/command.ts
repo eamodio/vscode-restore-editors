@@ -9,7 +9,7 @@ type CommandCallback<T extends keyof Commands> = (this: any, ...args: Commands[T
 
 export function createCommandDecorator<T extends UnqualifiedPaletteCommands>(
 	registry: Command<`${typeof extensionPrefix}.${T}`>[],
-): (command: T, options?: CommandOptions) => (this: any, ...args: any[]) => any {
+): (command: T, options?: CommandOptions) => (target: any, key: string, descriptor: PropertyDescriptor) => void {
 	return (command: T, options?: CommandOptions) => _command<T>(registry, command, options);
 }
 

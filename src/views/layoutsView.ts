@@ -1,8 +1,8 @@
 import type { Disposable } from 'vscode';
 import { ThemeIcon, TreeItem, TreeItemCollapsibleState, Uri, ViewColumn, workspace } from 'vscode';
+import type { LayoutDescriptor, StoredTab } from '../constants';
 import { ContextValues } from '../constants';
 import type { Container } from '../container';
-import type { LayoutDescriptor, StoredTab } from '../storage';
 import { createViewCommand, executeCommand, registerViewCommand } from '../system/command';
 import { fromNow } from '../system/date';
 import { getBestPath, normalizePath, relativeDir } from '../system/path';

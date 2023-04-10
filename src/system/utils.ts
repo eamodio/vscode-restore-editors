@@ -1,6 +1,6 @@
 import type { TextDocumentShowOptions, ViewColumn } from 'vscode';
 import { Uri } from 'vscode';
-import type { StoredTab } from '../storage';
+import type { StoredTab } from '../constants';
 import { executeCoreCommand } from './command';
 
 export async function openCustomUri(

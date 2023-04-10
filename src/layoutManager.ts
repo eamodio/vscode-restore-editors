@@ -13,13 +13,14 @@ import {
 } from 'vscode';
 import { uuid } from '@env/crypto';
 import type { GitExtension } from './@types/vscode.git';
+import type { Layout, LayoutDescriptor, Layouts, StoredTab, StoredTabCommon } from './constants';
 import type { Container } from './container';
-import type { Layout, LayoutDescriptor, Layouts, Storage, StoredTab, StoredTabCommon } from './storage';
 import { executeCoreCommand } from './system/command';
 import { debug, log } from './system/decorators/log';
 import { Logger } from './system/logger';
 import { getLogScope } from './system/logger.scope';
 import { updateRecordValue } from './system/object';
+import type { Storage } from './system/storage';
 import { openTab } from './system/utils';
 
 export class LayoutManager implements Disposable {

@@ -1,6 +1,6 @@
 import type { Disposable, QuickPickItem } from 'vscode';
 import { InputBoxValidationSeverity, window } from 'vscode';
-import type { LayoutDescriptor } from '../storage';
+import type { LayoutDescriptor } from '../constants';
 import { fromNow } from '../system/date';
 import { pluralize } from '../system/string';
 
