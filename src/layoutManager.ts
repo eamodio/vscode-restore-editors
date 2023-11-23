@@ -2,6 +2,7 @@ import type { Disposable, Event } from 'vscode';
 import {
 	EventEmitter,
 	extensions,
+	Range,
 	TabInputCustom,
 	TabInputNotebook,
 	TabInputNotebookDiff,
@@ -14,13 +15,16 @@ import {
 } from 'vscode';
 import { uuid } from '@env/crypto';
 import type { GitExtension } from './@types/vscode.git';
-import type { Layout, LayoutDescriptor, Layouts, StoredTab, StoredTabCommon } from './constants';
+import type { Layout, LayoutDescriptor, Layouts, StoredTab, StoredTabCommon, StoredTabSelection } from './constants';
 import type { Container } from './container';
 import { executeCoreCommand } from './system/command';
+import { configuration } from './system/configuration';
 import { debug, log } from './system/decorators/log';
+import { flatCount } from './system/iterable';
 import { Logger } from './system/logger';
 import { getLogScope } from './system/logger.scope';
 import { updateRecordValue } from './system/object';
+import { defer } from './system/promise';
 import type { Storage } from './system/storage';
 import { pluralize } from './system/string';
 import { openTab } from './system/utils';
@@ -246,7 +250,17 @@ export class LayoutManager implements Disposable {
 
 			for (const tab of layout.tabs) {
 				try {
-					await openTab(tab);
+					await openTab(tab, {
+						selection:
+							tab.selection != null
+								? new Range(
+										tab.selection.start.line,
+										tab.selection.start.character,
+										tab.selection.end.line,
+										tab.selection.end.character,
+								  )
+								: undefined,
+					});
 				} catch (ex) {
 					debugger;
 					Logger.error(
@@ -362,6 +376,15 @@ export class LayoutManager implements Disposable {
 				}
 			}
 
+			if (configuration.get('experimental.saveTabSelection')) {
+				const selectionMap = await getSelectionMap();
+				for (const t of data.tabs) {
+					if (t.type === 'terminal' || t.type === 'webview') continue;
+
+					t.selection = selectionMap.get(t.uri);
+				}
+			}
+
 			data.editorLayout = await executeCoreCommand('vscode.getEditorLayout');
 
 			const stored = this.storage.getWorkspace('layouts') ?? { v: 1, data: undefined! };
@@ -382,5 +405,76 @@ export class LayoutManager implements Disposable {
 			debugger;
 			Logger.error(ex, scope);
 		}
+	}
+}
+
+async function getSelectionMap(): Promise<Map<string, StoredTabSelection>> {
+	const map = new Map<string, StoredTabSelection>();
+	updateSelectionMap(map);
+
+	const groups = window.tabGroups;
+	let editors = flatCount(groups.all, g => g.tabs.length);
+	if (editors <= 1 || editors === map.size) return map;
+
+	const deferred = defer<Map<string, StoredTabSelection>>();
+	const disposables: Disposable[] = [];
+
+	function next() {
+		if (!deferred.pending) return;
+
+		editors--;
+		if (editors <= 0) {
+			deferred.fulfill(map);
+			disposables.forEach(d => void d.dispose());
+		}
+		void executeCoreCommand('workbench.action.nextEditor');
+	}
+
+	function deferNext() {
+		if (!deferred.pending) return;
+		setTimeout(() => {
+			if (!deferred.pending) return;
+
+			updateSelectionMap(map);
+			next();
+		}, 100);
+	}
+
+	disposables.push(groups.onDidChangeTabGroups(deferNext), groups.onDidChangeTabs(deferNext));
+
+	next();
+
+	return deferred.promise;
+}
+
+function updateSelectionMap(map: Map<string, StoredTabSelection>) {
+	for (const e of [window.activeTextEditor, ...window.visibleTextEditors]) {
+		if (e == null) continue;
+
+		map.set(e.document.uri.toString(), {
+			start: {
+				line: e.selection.start.line,
+				character: e.selection.start.character,
+			},
+			end: {
+				line: e.selection.end.line,
+				character: e.selection.end.character,
+			},
+		});
+	}
+
+	for (const e of [window.activeNotebookEditor, ...window.visibleNotebookEditors]) {
+		if (e == null) continue;
+
+		map.set(e.notebook.uri.toString(), {
+			start: {
+				line: e.selection.start,
+				character: 0,
+			},
+			end: {
+				line: e.selection.end,
+				character: 0,
+			},
+		});
 	}
 }

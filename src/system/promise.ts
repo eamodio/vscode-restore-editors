@@ -77,18 +77,34 @@ export function cancellable<T>(
 }
 
 export interface Deferred<T> {
-	promise: Promise<T>;
+	readonly pending: boolean;
+	readonly promise: Promise<T>;
 	fulfill: (value: T) => void;
 	cancel(): void;
 }
 
 export function defer<T>(): Deferred<T> {
-	const deferred: Deferred<T> = { promise: undefined!, fulfill: undefined!, cancel: undefined! };
+	const deferred: Mutable<Deferred<T>> = {
+		pending: true,
+		promise: undefined!,
+		fulfill: undefined!,
+		cancel: undefined!,
+	};
 	deferred.promise = new Promise((resolve, reject) => {
-		deferred.fulfill = resolve;
-		deferred.cancel = reject;
+		deferred.fulfill = function (value) {
+			deferred.pending = false;
+			resolve(value);
+		};
+		deferred.cancel = function () {
+			deferred.pending = false;
+			reject();
+		};
 	});
 	return deferred;
+}
+
+export function getDeferredPromiseIfPending<T>(deferred: Deferred<T> | undefined): Promise<T> | undefined {
+	return deferred?.pending ? deferred.promise : undefined;
 }
 
 export function getSettledValue<T>(promise: PromiseSettledResult<T>): T | undefined;

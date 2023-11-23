@@ -41,6 +41,7 @@ export async function openTab(tab: StoredTab, options?: TextDocumentShowOptions)
 				background: options == null ? !tab.active : false,
 				preserveFocus: options?.preserveFocus ?? !(tab.active && tab.groupActive),
 				preview: options?.preview ?? tab.preview,
+				selection: options?.selection,
 				viewColumn: options?.viewColumn ?? tab.column,
 			});
 			break;
@@ -49,6 +50,7 @@ export async function openTab(tab: StoredTab, options?: TextDocumentShowOptions)
 				background: options == null ? !tab.active : false,
 				preserveFocus: options?.preserveFocus ?? !(tab.active && tab.groupActive),
 				preview: options?.preview ?? tab.preview,
+				selection: options?.selection,
 				viewColumn: options?.viewColumn ?? tab.column,
 			});
 			break;
@@ -58,6 +60,7 @@ export async function openTab(tab: StoredTab, options?: TextDocumentShowOptions)
 				background: options == null ? !tab.active : false,
 				preserveFocus: options?.preserveFocus ?? !(tab.active && tab.groupActive),
 				preview: options?.preview ?? tab.preview,
+				selection: options?.selection,
 				viewColumn: options?.viewColumn ?? tab.column,
 			});
 			break;

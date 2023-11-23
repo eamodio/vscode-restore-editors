@@ -86,6 +86,11 @@ export interface Stored<T, SchemaVersion extends number = 1> {
 	data: T;
 }
 
+export interface StoredTabSelection {
+	start: { line: number; character: number };
+	end: { line: number; character: number };
+}
+
 export interface StoredTabCommon {
 	label: string;
 
@@ -94,6 +99,7 @@ export interface StoredTabCommon {
 	preview: boolean;
 	column: ViewColumn;
 	order: number;
+	selection?: StoredTabSelection;
 }
 
 export interface StoredTextTab extends StoredTabCommon {

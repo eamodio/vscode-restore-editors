@@ -8,6 +8,9 @@ export type OutputLevel = LogLevel | DeprecatedOutputLevel;
 
 export interface Config {
 	outputLevel: OutputLevel;
+	experimental: {
+		saveTabSelection: boolean;
+	};
 }
 
 export function fromOutputLevel(level: OutputLevel): LogLevel {

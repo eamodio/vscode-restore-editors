@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - Adds import and export support for saved layouts &mdash; closes [#19](https://github.com/eamodio/vscode-restore-editors/issues/19)
   - Adds a _Restore Editors: Export Saved Layouts_ command to the _Command Palette_ and the _Saved Layouts_ view context menu
   - Adds a _Restore Editors: Import Saved Layouts..._ command to the _Command Palette_ and the _Saved Layouts_ view context menu
+- Adds experimental support for saving and restoring the selection of each tab &mdash; closes [#15](https://github.com/eamodio/vscode-restore-editors/issues/15)
+  - Adds a `restoreEditors.experimental.saveTabSelection` setting to specify whether to attempt to save the selection of each tab
 
 ### Fixed
 
