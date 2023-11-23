@@ -10,7 +10,9 @@ console.log(changelogPath);
 let data = fs.readFileSync(changelogPath, 'utf8');
 
 // Find the current version number
-const match = /\[unreleased\]: https:\/\/github\.com\/gitkraken\/vscode-gitlens\/compare\/v(.+)\.\.\.HEAD/.exec(data);
+const match = /\[unreleased\]: https:\/\/github\.com\/eamodio\/vscode-restore-editors\/compare\/v(.+)\.\.\.HEAD/.exec(
+	data,
+);
 const currentVersion = match?.[1];
 if (currentVersion == null || versionRegex.test(currentVersion) === false) {
 	console.error('Unable to find current version number.');
@@ -41,7 +43,7 @@ rl.question(`Enter the new version number (format x.x.x, current is ${currentVer
 	const dd = String(today.getDate()).padStart(2, '0');
 
 	const newVersionHeader = `## [Unreleased]\n\n## [${version}] - ${yyyy}-${mm}-${dd}`;
-	const newVersionLink = `[${version}]: https://github.com/gitkraken/vscode-gitlens/compare/v${currentVersion}...gitkraken:v${version}`;
+	const newVersionLink = `[${version}]: https://github.com/eamodio/vscode-restore-editors/compare/v${currentVersion}...eamodio:v${version}`;
 
 	// Add the new version header below the ## [Unreleased] header
 	data = data.replace('## [Unreleased]', newVersionHeader);
