@@ -182,8 +182,11 @@ export class LayoutManager implements Disposable {
 
 		// Get current branch from the Git extension
 		// TODO@eamodio support remote repositories
-		const repositories = extensions.getExtension<GitExtension>('vscode.git')?.exports.getAPI(1)?.repositories;
-		const branch = repositories?.length === 1 ? repositories[0].state.HEAD?.name : undefined;
+		let branch;
+		try {
+			const repositories = extensions.getExtension<GitExtension>('vscode.git')?.exports.getAPI(1)?.repositories;
+			branch = repositories?.length === 1 ? repositories[0].state.HEAD?.name : undefined;
+		} catch {}
 
 		try {
 			let descriptor: LayoutDescriptor;

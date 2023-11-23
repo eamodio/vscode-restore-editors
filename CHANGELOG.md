@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixes [#18](https://github.com/eamodio/vscode-restore-editors/issues/18) - Save layout without git
+
 ## [1.0.1] - 2023-04-08
 
 ### Fixed
