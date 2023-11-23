@@ -1,3 +1,4 @@
+.devcontainer/**
 .github/**
 .vscode/**
 .vscode-clean/**
