@@ -45,6 +45,8 @@ export class LayoutsView extends ViewBase<'layouts', LayoutsViewNode> {
 	protected registerCommands(): Disposable[] {
 		return [
 			registerViewCommand(this.id, 'refresh', () => this.refresh(true)),
+			registerViewCommand(this.id, 'export', () => executeCommand('restoreEditors.export')),
+			registerViewCommand(this.id, 'import', () => executeCommand('restoreEditors.import')),
 			registerViewCommand(this.id, 'save', () => executeCommand('restoreEditors.save')),
 			registerViewCommand(this.id, 'layout.delete', n => executeCommand('restoreEditors.delete', n.layout.id)),
 			registerViewCommand(this.id, 'layout.replace', n => executeCommand('restoreEditors.replace', n.layout.id)),

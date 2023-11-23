@@ -10,6 +10,7 @@ import {
 	TabInputTextDiff,
 	TabInputWebview,
 	window,
+	workspace,
 } from 'vscode';
 import { uuid } from '@env/crypto';
 import type { GitExtension } from './@types/vscode.git';
@@ -21,7 +22,13 @@ import { Logger } from './system/logger';
 import { getLogScope } from './system/logger.scope';
 import { updateRecordValue } from './system/object';
 import type { Storage } from './system/storage';
+import { pluralize } from './system/string';
 import { openTab } from './system/utils';
+
+interface ExportedLayouts {
+	v: 1;
+	layouts: (Omit<LayoutDescriptor, 'tabs'> & Layout)[];
+}
 
 export class LayoutManager implements Disposable {
 	private _onDidChange = new EventEmitter<void>();
@@ -112,6 +119,87 @@ export class LayoutManager implements Disposable {
 			debugger;
 			Logger.error(ex, scope);
 		}
+	}
+
+	async export(): Promise<void> {
+		const data: ExportedLayouts = {
+			v: 1,
+			layouts: [],
+		};
+
+		for (const descriptor of this.getLayouts()) {
+			const layout = this.get(descriptor.id);
+			if (layout == null) continue;
+
+			data.layouts.push({ ...descriptor, ...layout });
+		}
+
+		const d = await workspace.openTextDocument({ content: JSON.stringify(data, undefined, 2), language: 'json' });
+		await window.showTextDocument(d);
+	}
+
+	async import(): Promise<void> {
+		const uris = await window.showOpenDialog({
+			canSelectFiles: true,
+			canSelectFolders: false,
+			canSelectMany: false,
+			defaultUri: workspace.workspaceFolders?.[0].uri,
+			openLabel: 'Import',
+			filters: {
+				JSON: ['json'],
+			},
+		});
+		const uri = uris?.[0];
+		if (uri == null) return;
+
+		const content = await workspace.fs.readFile(uri);
+		const data = JSON.parse(content.toString()) as ExportedLayouts;
+		if (data.v !== 1 || !data.layouts?.length) {
+			void window.showErrorMessage('Unable to import saved layouts. Invalid data format');
+			return;
+		}
+
+		// prompt the user to replace or merge
+		const merge = { title: 'Merge' };
+		const replace = { title: 'Replace All' };
+		const cancel = { title: 'Cancel', isCloseAffordance: true };
+		const result = await window.showInformationMessage(
+			`Will import ${pluralize(
+				'saved layout',
+				data.layouts.length,
+			)}.\nDo you want to merge with your existing layouts or replace them?`,
+			{ modal: true },
+			merge,
+			replace,
+			cancel,
+		);
+		if (result !== replace && result !== merge) return;
+
+		const stored = (result === merge ? this.storage.getWorkspace('layouts') : undefined) ?? {
+			v: 1,
+			data: undefined!,
+		};
+		for (const layout of data.layouts) {
+			stored.data = updateRecordValue<LayoutDescriptor>(stored.data, layout.id, {
+				id: layout.id,
+				label: layout.label,
+				context: layout.context,
+				tabs: layout.tabs.length,
+				timestamp: layout.timestamp,
+			});
+
+			await this.storage.storeWorkspace(`layout:${layout.id}`, {
+				v: 1,
+				data: {
+					id: layout.id,
+					editorLayout: layout.editorLayout,
+					tabs: layout.tabs,
+				},
+			});
+		}
+
+		await this.storage.storeWorkspace('layouts', stored);
+		this._onDidChange.fire();
 	}
 
 	private async update(id: string, mutator: (layout: LayoutDescriptor) => void): Promise<void> {

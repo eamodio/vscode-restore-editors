@@ -22,6 +22,16 @@ export class CommandProvider implements Disposable {
 		this._disposable.dispose();
 	}
 
+	@command('export')
+	async export() {
+		return this.container.layoutManager.export();
+	}
+
+	@command('import')
+	async import() {
+		return this.container.layoutManager.import();
+	}
+
 	@command('delete')
 	async delete(id?: string) {
 		if (id == null) {

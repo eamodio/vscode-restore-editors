@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [Unreleased]
 
+### Added
+
+- Adds import and export support for saved layouts &mdash; closes [#19](https://github.com/eamodio/vscode-restore-editors/issues/19)
+  - Adds a _Restore Editors: Export Saved Layouts_ command to the _Command Palette_ and the _Saved Layouts_ view context menu
+  - Adds a _Restore Editors: Import Saved Layouts..._ command to the _Command Palette_ and the _Saved Layouts_ view context menu
+
 ### Fixed
 
 - Fixes [#18](https://github.com/eamodio/vscode-restore-editors/issues/18) - Save layout without git

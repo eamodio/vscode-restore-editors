@@ -92,6 +92,18 @@
 		],
 		"commands": [
 			{
+				"command": "restoreEditors.export",
+				"title": "Export Saved Layouts",
+				"category": "Restore Editors",
+				"icon": "$(cloud-upload)"
+			},
+			{
+				"command": "restoreEditors.import",
+				"title": "Import Saved Layouts...",
+				"category": "Restore Editors",
+				"icon": "$(cloud-download)"
+			},
+			{
 				"command": "restoreEditors.delete",
 				"title": "Delete Saved Layout...",
 				"category": "Restore Editors",
@@ -125,6 +137,16 @@
 				"command": "restoreEditors.views.layouts.refresh",
 				"title": "Refresh",
 				"icon": "$(refresh)"
+			},
+			{
+				"command": "restoreEditors.views.layouts.export",
+				"title": "Export Saved Layouts",
+				"icon": "$(cloud-upload)"
+			},
+			{
+				"command": "restoreEditors.views.layouts.import",
+				"title": "Import Saved Layouts...",
+				"icon": "$(cloud-download)"
 			},
 			{
 				"command": "restoreEditors.views.layouts.save",
@@ -171,6 +193,14 @@
 			"commandPalette": [
 				{
 					"command": "restoreEditors.views.layouts.refresh",
+					"when": "false"
+				},
+				{
+					"command": "restoreEditors.views.layouts.export",
+					"when": "false"
+				},
+				{
+					"command": "restoreEditors.views.layouts.import",
 					"when": "false"
 				},
 				{
@@ -222,6 +252,16 @@
 					"command": "restoreEditors.views.layouts.refresh",
 					"when": "view == restoreEditors.views.layouts",
 					"group": "navigation@99"
+				},
+				{
+					"command": "restoreEditors.views.layouts.export",
+					"when": "view == restoreEditors.views.layouts",
+					"group": "import_export@2"
+				},
+				{
+					"command": "restoreEditors.views.layouts.import",
+					"when": "view == restoreEditors.views.layouts",
+					"group": "import_export@3"
 				}
 			],
 			"view/item/context": [

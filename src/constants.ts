@@ -8,6 +8,8 @@ export const extensionPrefix = 'restoreEditors';
 type StripPrefix<Key extends string, Prefix extends string> = Key extends `${Prefix}${infer Rest}` ? Rest : never;
 
 export type PaletteCommands = {
+	'restoreEditors.export': [];
+	'restoreEditors.import': [];
 	'restoreEditors.delete': [] | [string | undefined];
 	'restoreEditors.rename': [] | [string | undefined] | [string, string];
 	'restoreEditors.replace': [] | [string | undefined];
@@ -16,6 +18,8 @@ export type PaletteCommands = {
 };
 
 export type Commands = PaletteCommands & {
+	'restoreEditors.views.layouts.export': [];
+	'restoreEditors.views.layouts.import': [];
 	'restoreEditors.views.layouts.save': [] | [LayoutNode | undefined];
 	'restoreEditors.views.layouts.layout.delete': [LayoutNode];
 	'restoreEditors.views.layouts.layout.rename': [LayoutNode];
@@ -32,7 +36,7 @@ export type Commands = PaletteCommands & {
 	[Key in `${typeof extensionPrefix}.key.${Keys}`]: [];
 };
 
-export type UnqualifiedPaletteCommands = StripPrefix<keyof PaletteCommands, 'restoreEditors.'>;
+export type UnqualifiedPaletteCommands = StripPrefix<keyof PaletteCommands, `${typeof extensionPrefix}.`>;
 export type UnqualifiedViewCommands = StripPrefix<keyof Commands, `${TreeViewIds}.`>;
 
 export type ContextKeys = `${typeof extensionPrefix}:key:${Keys}`;
@@ -167,6 +171,8 @@ export type Layouts = Record<string, LayoutDescriptor>;
 
 export type TreeViewCommands = `${typeof extensionPrefix}.views.${`layouts.${
 	| 'refresh'
+	| 'export'
+	| 'import'
 	| 'save'
 	| `.layout.${'delete' | 'rename' | 'replace' | 'restore' | `.tab.${'delete' | 'preview' | 'restore'}`}`}`}`;
 
