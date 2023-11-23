@@ -1,22 +1,23 @@
 import type {
 	CancellationToken,
 	ConfigurationChangeEvent,
-	Disposable,
 	Event,
+	TreeCheckboxChangeEvent,
 	TreeDataProvider,
 	TreeItem,
 	TreeView,
 	TreeViewExpansionEvent,
 	TreeViewSelectionChangeEvent,
 	TreeViewVisibilityChangeEvent,
+	ViewBadge,
 } from 'vscode';
-import { EventEmitter, MarkdownString, TreeItemCollapsibleState, window } from 'vscode';
-import type { ViewIds } from '../constants';
+import { Disposable, EventEmitter, MarkdownString, TreeItemCollapsibleState, window } from 'vscode';
+import type { TreeViewCommandSuffixesByViewType, TreeViewIds, TreeViewTypes } from '../constants';
 import type { Container } from '../container';
-import { executeCommand } from '../system/command';
+import { executeCoreCommand } from '../system/command';
 import { configuration } from '../system/configuration';
 import { debug, log } from '../system/decorators/log';
-import { debounce } from '../system/function';
+import { debounce, once } from '../system/function';
 import { Logger } from '../system/logger';
 import { getLogScope } from '../system/logger.scope';
 import { isPromise } from '../system/promise';
@@ -26,7 +27,16 @@ export interface TreeViewNodeCollapsibleStateChangeEvent<T> extends TreeViewExpa
 	state: TreeItemCollapsibleState;
 }
 
-export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataProvider<ViewNode>, Disposable {
+export abstract class ViewBase<Type extends TreeViewTypes, RootNode extends ViewNode>
+	implements TreeDataProvider<ViewNode>, Disposable
+{
+	get id(): TreeViewIds<Type> {
+		return `restoreEditors.views.${this.type}`;
+	}
+
+	protected _onDidInitialize = new EventEmitter<void>();
+	private initialized = false;
+
 	protected _onDidChangeTreeData = new EventEmitter<ViewNode | undefined>();
 	get onDidChangeTreeData(): Event<ViewNode | undefined> {
 		return this._onDidChangeTreeData.event;
@@ -47,11 +57,20 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 		return this._onDidChangeNodeCollapsibleState.event;
 	}
 
+	private _onDidChangeNodesCheckedState = new EventEmitter<TreeCheckboxChangeEvent<ViewNode>>();
+	get onDidChangeNodesCheckedState(): Event<TreeCheckboxChangeEvent<ViewNode>> {
+		return this._onDidChangeNodesCheckedState.event;
+	}
+
 	protected disposables: Disposable[] = [];
 	protected root: RootNode | undefined;
 	protected tree: TreeView<ViewNode> | undefined;
 
-	constructor(public readonly container: Container, public readonly id: ViewIds, public readonly name: string) {
+	constructor(
+		public readonly container: Container,
+		public readonly type: Type,
+		public readonly name: string,
+	) {
 		if (this.container.debugging) {
 			function addDebuggingInfo(item: TreeItem, node: ViewNode, parent: ViewNode | undefined) {
 				if (item.tooltip == null) {
@@ -74,7 +93,7 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 			}
 
 			const getTreeItemFn = this.getTreeItem;
-			this.getTreeItem = async function (this: ViewBase<RootNode>, node: ViewNode) {
+			this.getTreeItem = async function (this: ViewBase<Type, RootNode>, node: ViewNode) {
 				const item = await getTreeItemFn.apply(this, [node]);
 
 				if (node.resolveTreeItem == null) {
@@ -85,7 +104,7 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 			};
 
 			const resolveTreeItemFn = this.resolveTreeItem;
-			this.resolveTreeItem = async function (this: ViewBase<RootNode>, item: TreeItem, node: ViewNode) {
+			this.resolveTreeItem = async function (this: ViewBase<Type, RootNode>, item: TreeItem, node: ViewNode) {
 				item = await resolveTreeItemFn.apply(this, [item, node]);
 
 				addDebuggingInfo(item, node, node.getParent());
@@ -101,7 +120,9 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 	}
 
 	dispose() {
-		this.disposables.forEach(d => void d.dispose());
+		this._nodeState?.dispose();
+		this._nodeState = undefined;
+		Disposable.from(...this.disposables).dispose();
 	}
 
 	get canReveal(): boolean {
@@ -112,6 +133,15 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 		return false;
 	}
 
+	private _nodeState: ViewNodeState | undefined;
+	get nodeState(): ViewNodeState {
+		if (this._nodeState == null) {
+			this._nodeState = new ViewNodeState();
+		}
+
+		return this._nodeState;
+	}
+
 	protected get showCollapseAll(): boolean {
 		return true;
 	}
@@ -119,6 +149,15 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 	protected filterConfigurationChanged(_e: ConfigurationChangeEvent) {
 		// if (!configuration.changed(e, 'views')) return false;
 		return false;
+	}
+
+	get badge(): ViewBadge | undefined {
+		return this.tree?.badge;
+	}
+	set badge(value: ViewBadge | undefined) {
+		if (this.tree != null) {
+			this.tree.badge = value;
+		}
 	}
 
 	private _title: string | undefined;
@@ -154,8 +193,8 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 		}
 	}
 
-	getQualifiedCommand(command: string) {
-		return `${this.id}.${command}`;
+	getQualifiedCommand(command: TreeViewCommandSuffixesByViewType<Type>) {
+		return `restoreEditors.views.${this.type}.${command}` as const;
 	}
 
 	protected abstract getRoot(): RootNode;
@@ -180,10 +219,22 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 			this.tree,
 			this.tree.onDidChangeSelection(debounce(this.onSelectionChanged, 250), this),
 			this.tree.onDidChangeVisibility(debounce(this.onVisibilityChanged, 250), this),
+			this.tree.onDidChangeCheckboxState(this.onCheckboxStateChanged, this),
 			this.tree.onDidCollapseElement(this.onElementCollapsed, this),
 			this.tree.onDidExpandElement(this.onElementExpanded, this),
 		);
-		this._title = this.tree.title;
+
+		if (this._title != null) {
+			this.tree.title = this._title;
+		} else {
+			this._title = this.tree.title;
+		}
+		if (this._description != null) {
+			this.tree.description = this._description;
+		}
+		if (this._message != null) {
+			this.tree.message = this._message;
+		}
 	}
 
 	protected ensureRoot(force: boolean = false) {
@@ -198,7 +249,22 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 		if (node != null) return node.getChildren();
 
 		const root = this.ensureRoot();
-		return root.getChildren();
+		const children = root.getChildren();
+		if (!this.initialized) {
+			if (isPromise(children)) {
+				void children.then(() => {
+					if (!this.initialized) {
+						this.initialized = true;
+						setTimeout(() => this._onDidInitialize.fire(), 1);
+					}
+				});
+			} else {
+				this.initialized = true;
+				setTimeout(() => this._onDidInitialize.fire(), 1);
+			}
+		}
+
+		return children;
 	}
 
 	getParent(node: ViewNode): ViewNode | undefined {
@@ -219,6 +285,21 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 
 	protected onElementExpanded(e: TreeViewExpansionEvent<ViewNode>) {
 		this._onDidChangeNodeCollapsibleState.fire({ ...e, state: TreeItemCollapsibleState.Expanded });
+	}
+
+	protected onCheckboxStateChanged(e: TreeCheckboxChangeEvent<ViewNode>) {
+		try {
+			for (const [node, state] of e.items) {
+				if (node.id == null) {
+					debugger;
+					throw new Error('Id is required for checkboxes');
+				}
+
+				node.storeState('checked', state, true);
+			}
+		} finally {
+			this._onDidChangeNodesCheckedState.fire(e);
+		}
 	}
 
 	protected onSelectionChanged(e: TreeViewSelectionChangeEvent<ViewNode>) {
@@ -246,30 +327,14 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 		return this.tree?.visible ?? false;
 	}
 
-	async findNode(
-		id: string,
-		options?: {
-			canTraverse?: (node: ViewNode) => boolean | Promise<boolean>;
-			maxDepth?: number;
-			token?: CancellationToken;
-		},
-	): Promise<ViewNode | undefined>;
-	async findNode(
-		predicate: (node: ViewNode) => boolean,
-		options?: {
-			canTraverse?: (node: ViewNode) => boolean | Promise<boolean>;
-			maxDepth?: number;
-			token?: CancellationToken;
-		},
-	): Promise<ViewNode | undefined>;
-	@log<ViewBase<RootNode>['findNode']>({
+	@log<ViewBase<Type, RootNode>['findNode']>({
 		args: {
-			0: predicate => (typeof predicate === 'string' ? predicate : '<function>'),
-			1: opts => JSON.stringify(opts),
+			0: '<function>',
+			1: opts => `options=${JSON.stringify({ ...opts, canTraverse: undefined, token: undefined })}`,
 		},
 	})
 	async findNode(
-		predicate: string | ((node: ViewNode) => boolean),
+		predicate: (node: ViewNode) => boolean,
 		options?: {
 			canTraverse?: (node: ViewNode) => boolean | Promise<boolean>;
 			maxDepth?: number;
@@ -278,10 +343,10 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 	): Promise<ViewNode | undefined> {
 		const scope = getLogScope();
 
-		async function find(this: ViewBase<RootNode>) {
+		async function find(this: ViewBase<Type, RootNode>) {
 			try {
 				const node = await findNodeCoreBFS(
-					typeof predicate === 'string' ? n => n.id === predicate : predicate,
+					predicate,
 					this.ensureRoot(),
 					options?.canTraverse,
 					options?.maxDepth ?? 2,
@@ -295,11 +360,14 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 			}
 		}
 
-		if (this.root != null) return find.call(this);
+		if (this.initialized) return find.call(this);
 
 		// If we have no root (e.g. never been initialized) force it so the tree will load properly
-		await this.show({ preserveFocus: true });
+		void this.show({ preserveFocus: true });
 		// Since we have to show the view, give the view time to load and let the callstack unwind before we try to find the node
+		return new Promise<ViewNode | undefined>(resolve =>
+			once(this._onDidInitialize.event)(() => resolve(find.call(this)), this),
+		);
 		return new Promise<ViewNode | undefined>(resolve => setTimeout(() => resolve(find.call(this)), 100));
 	}
 
@@ -333,12 +401,17 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 
 	@debug()
 	async refresh(reset: boolean = false) {
+		// If we are resetting, make sure to clear any saved node state
+		if (reset) {
+			this.nodeState.reset();
+		}
+
 		await this.root?.refresh?.(reset);
 
 		this.triggerNodeChange();
 	}
 
-	@debug<ViewBase<RootNode>['refreshNode']>({ args: { 0: n => n.toString() } })
+	@debug<ViewBase<Type, RootNode>['refreshNode']>({ args: { 0: n => n.toString() } })
 	async refreshNode(node: ViewNode, reset: boolean = false, force: boolean = false) {
 		const cancel = await node.refresh?.(reset);
 		if (!force && cancel === true) return;
@@ -346,7 +419,7 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 		this.triggerNodeChange(node);
 	}
 
-	@log<ViewBase<RootNode>['reveal']>({ args: { 0: n => n.toString() } })
+	@log<ViewBase<Type, RootNode>['reveal']>({ args: { 0: n => n.toString() } })
 	async reveal(
 		node: ViewNode,
 		options?: {
@@ -369,17 +442,68 @@ export abstract class ViewBase<RootNode extends ViewNode> implements TreeDataPro
 		const scope = getLogScope();
 
 		try {
-			void (await executeCommand(`${this.id}.focus`, options));
+			void (await executeCoreCommand(`${this.id}.focus`, options));
 		} catch (ex) {
 			Logger.error(ex, scope);
 		}
 	}
 
-	@debug<ViewBase<RootNode>['triggerNodeChange']>({ args: { 0: n => n?.toString() } })
+	@debug<ViewBase<Type, RootNode>['triggerNodeChange']>({ args: { 0: n => n?.toString() } })
 	triggerNodeChange(node?: ViewNode) {
 		// Since the root node won't actually refresh, force everything
 		this._onDidChangeTreeData.fire(node != null && node !== this.root ? node : undefined);
 	}
+
+	// NOTE: @eamodio uncomment to track node leaks
+	// private _nodeTracking = new Map<string, string | undefined>();
+	// private registry = new FinalizationRegistry<string>(uuid => {
+	// 	const id = this._nodeTracking.get(uuid);
+
+	// 	Logger.log(`@@@ ${this.type} Finalizing [${uuid}]:${id}`);
+
+	// 	this._nodeTracking.delete(uuid);
+
+	// 	if (id != null) {
+	// 		const c = count(this._nodeTracking.values(), v => v === id);
+	// 		Logger.log(`@@@ ${this.type} [${padLeft(String(c), 3)}] ${id}`);
+	// 	}
+	// });
+
+	// registerNode(node: ViewNode) {
+	// 	const uuid = node.uuid;
+
+	// 	Logger.log(`@@@ ${this.type}.registerNode [${uuid}]:${node.id}`);
+
+	// 	this._nodeTracking.set(uuid, node.id);
+	// 	this.registry.register(node, uuid);
+	// }
+
+	// unregisterNode(node: ViewNode) {
+	// 	const uuid = node.uuid;
+
+	// 	Logger.log(`@@@ ${this.type}.unregisterNode [${uuid}]:${node.id}`);
+
+	// 	this._nodeTracking.delete(uuid);
+	// 	this.registry.unregister(node);
+	// }
+
+	// private _timer = setInterval(() => {
+	// 	const counts = new Map<string | undefined, number>();
+	// 	for (const value of this._nodeTracking.values()) {
+	// 		const count = counts.get(value) ?? 0;
+	// 		counts.set(value, count + 1);
+	// 	}
+
+	// 	let total = 0;
+	// 	for (const [id, count] of counts) {
+	// 		if (count > 1) {
+	// 			Logger.log(`@@@ ${this.type} [${padLeft(String(count), 3)}] ${id}`);
+	// 		}
+	// 		total += count;
+	// 	}
+
+	// 	Logger.log(`@@@ ${this.type} total=${total}`);
+	// }, 10000);
 }
 
 async function findNodeCoreBFS(
@@ -428,4 +552,107 @@ async function findNodeCoreBFS(
 	}
 
 	return undefined;
+}
+
+export class ViewNodeState implements Disposable {
+	private _store: Map<string, Map<string, unknown>> | undefined;
+	private _stickyStore: Map<string, Map<string, unknown>> | undefined;
+
+	dispose() {
+		this.reset();
+
+		this._stickyStore?.clear();
+		this._stickyStore = undefined;
+	}
+
+	reset() {
+		this._store?.clear();
+		this._store = undefined;
+	}
+
+	delete(prefix: string, key: string): void {
+		for (const store of [this._store, this._stickyStore]) {
+			if (store == null) continue;
+
+			for (const [id, map] of store) {
+				if (id.startsWith(prefix)) {
+					map.delete(key);
+					if (map.size === 0) {
+						store.delete(id);
+					}
+				}
+			}
+		}
+	}
+
+	deleteState(id: string, key?: string): void {
+		if (key == null) {
+			this._store?.delete(id);
+			this._stickyStore?.delete(id);
+		} else {
+			for (const store of [this._store, this._stickyStore]) {
+				if (store == null) continue;
+
+				const map = store.get(id);
+				if (map == null) continue;
+
+				map.delete(key);
+				if (map.size === 0) {
+					store.delete(id);
+				}
+			}
+		}
+	}
+
+	get<T>(prefix: string, key: string): Map<string, T> {
+		const maps = new Map<string, T>();
+
+		for (const store of [this._store, this._stickyStore]) {
+			if (store == null) continue;
+
+			for (const [id, map] of store) {
+				if (id.startsWith(prefix) && map.has(key)) {
+					maps.set(id, map.get(key) as T);
+				}
+			}
+		}
+
+		return maps;
+	}
+
+	getState<T>(id: string, key: string): T | undefined {
+		return (this._stickyStore?.get(id)?.get(key) ?? this._store?.get(id)?.get(key)) as T | undefined;
+	}
+
+	storeState<T>(id: string, key: string, value: T, sticky?: boolean): void {
+		let store;
+		if (sticky) {
+			if (this._stickyStore == null) {
+				this._stickyStore = new Map();
+			}
+			store = this._stickyStore;
+		} else {
+			if (this._store == null) {
+				this._store = new Map();
+			}
+			store = this._store;
+		}
+
+		const state = store.get(id);
+		if (state != null) {
+			state.set(key, value);
+		} else {
+			store.set(id, new Map([[key, value]]));
+		}
+	}
+}
+
+export function disposeChildren(oldChildren: ViewNode[] | undefined, newChildren?: ViewNode[]) {
+	if (!oldChildren?.length) return;
+
+	for (const child of oldChildren) {
+		if (newChildren?.includes(child)) continue;
+
+		child.dispose();
+	}
 }

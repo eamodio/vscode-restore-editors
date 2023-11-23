@@ -1,5 +1,7 @@
 import type { TextDocumentShowOptions, ViewColumn } from 'vscode';
-import type { LayoutNode, LayoutsView, LayoutTabNode } from './views/layoutsView';
+import type { LayoutNode } from './views/layouts/layoutNode';
+import type { LayoutsView } from './views/layouts/layoutsView';
+import type { LayoutTabNode } from './views/layouts/layoutTabNode';
 
 export const extensionPrefix = 'restoreEditors';
 
@@ -23,15 +25,15 @@ export type Commands = PaletteCommands & {
 	'restoreEditors.views.layouts.tab.preview': [LayoutTabNode];
 	'restoreEditors.views.layouts.tab.restore': [LayoutTabNode];
 } & {
-	[Key in `${ViewIds}.focus`]: [] | [TextDocumentShowOptions | undefined];
+	[Key in `${TreeViewIds}.focus`]: [] | [TextDocumentShowOptions | undefined];
 } & {
-	[Key in `${ViewIds}.${'refresh' | 'resetLocation'}`]: [];
+	[Key in `${TreeViewIds}.${'refresh' | 'resetLocation'}`]: [];
 } & {
 	[Key in `${typeof extensionPrefix}.key.${Keys}`]: [];
 };
 
 export type UnqualifiedPaletteCommands = StripPrefix<keyof PaletteCommands, 'restoreEditors.'>;
-export type UnqualifiedViewCommands = StripPrefix<keyof Commands, `${ViewIds}.`>;
+export type UnqualifiedViewCommands = StripPrefix<keyof Commands, `${TreeViewIds}.`>;
 
 export type ContextKeys = `${typeof extensionPrefix}:key:${Keys}`;
 
@@ -45,8 +47,8 @@ export type CoreCommands =
 	| 'workbench.action.closeActiveEditor'
 	| 'workbench.action.closeAllEditors'
 	| 'workbench.action.createTerminalEditor'
-	| 'workbench.action.nextEditor';
-
+	| 'workbench.action.nextEditor'
+	| `${ViewIds}.${'focus' | 'removeView' | 'resetViewLocation' | 'toggleVisibility'}`;
 export const keys = [
 	'left',
 	'alt+left',
@@ -62,19 +64,18 @@ export type Keys = (typeof keys)[number];
 
 export type SecretKeys = never;
 
-export type DeprecatedGlobalStorage = object;
+export type DeprecatedGlobalStorage = Record<string, unknown>;
 
-export type GlobalStorage = object;
+export type GlobalStorage = Record<string, unknown>;
 
 export type DeprecatedWorkspaceStorage = {
 	/** @deprecated use `layouts` */
 	documents: Record<string, any>;
 };
 
-export type WorkspaceStorage =
-	| {
-			layouts: Stored<Layouts>;
-	  } & { [key in `layout:${string}`]: Stored<Layout> };
+export type WorkspaceStorage = {
+	layouts: Stored<Layouts>;
+} & { [key in `layout:${string}`]: Stored<Layout> };
 
 export interface Stored<T, SchemaVersion extends number = 1> {
 	v: SchemaVersion;
@@ -164,9 +165,32 @@ export interface Layout {
 
 export type Layouts = Record<string, LayoutDescriptor>;
 
-export type View = LayoutsView;
+export type TreeViewCommands = `${typeof extensionPrefix}.views.${`layouts.${
+	| 'refresh'
+	| 'save'
+	| `.layout.${'delete' | 'rename' | 'replace' | 'restore' | `.tab.${'delete' | 'preview' | 'restore'}`}`}`}`;
 
-export type ViewIds = `${typeof extensionPrefix}.views.layouts`;
+type ExtractSuffix<Prefix extends string, U> = U extends `${Prefix}${infer V}` ? V : never;
+type FilterCommands<Prefix extends string, U> = U extends `${Prefix}${infer V}` ? `${Prefix}${V}` : never;
+
+export type TreeViewCommandsByViewId<T extends TreeViewIds> = FilterCommands<T, TreeViewCommands>;
+export type TreeViewCommandsByViewType<T extends TreeViewTypes> = FilterCommands<
+	`${typeof extensionPrefix}.views.${T}.`,
+	TreeViewCommands
+>;
+export type TreeViewCommandSuffixesByViewType<T extends TreeViewTypes> = ExtractSuffix<
+	`${typeof extensionPrefix}.views.${T}.`,
+	FilterCommands<`${typeof extensionPrefix}.views.${T}.`, TreeViewCommands>
+>;
+
+export type TreeViewTypes = 'layouts';
+export type TreeViewIds<T extends TreeViewTypes = TreeViewTypes> = `${typeof extensionPrefix}.views.${T}`;
+
+export type TreeViewNodeTypes = 'layouts' | 'layout' | 'tab';
+
+export type Views = LayoutsView;
+export type ViewTypes = TreeViewTypes;
+export type ViewIds = TreeViewIds;
 
 export const enum ViewItemContextValues {
 	Layout = 'restoreEditors:layout',

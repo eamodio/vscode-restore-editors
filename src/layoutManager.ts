@@ -29,7 +29,10 @@ export class LayoutManager implements Disposable {
 		return this._onDidChange.event;
 	}
 
-	constructor(private readonly container: Container, private readonly storage: Storage) {}
+	constructor(
+		private readonly container: Container,
+		private readonly storage: Storage,
+	) {}
 
 	dispose() {}
 

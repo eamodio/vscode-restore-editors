@@ -4,7 +4,7 @@
 	"description": "Quickly save, manage, and restore editor layouts",
 	"version": "1.0.1",
 	"engines": {
-		"vscode": "^1.76.0"
+		"vscode": "^1.80.0"
 	},
 	"license": "SEE LICENSE IN LICENSE",
 	"publisher": "amodio",
@@ -54,6 +54,7 @@
 		"onView:viewId:restoreEditors.views.layouts"
 	],
 	"capabilities": {
+		"virtualWorkspaces": true,
 		"untrustedWorkspaces": {
 			"supported": true
 		}
@@ -67,22 +68,24 @@
 				"properties": {
 					"restoreEditors.outputLevel": {
 						"type": "string",
-						"default": "errors",
+						"default": "warn",
 						"enum": [
-							"silent",
-							"errors",
-							"verbose",
+							"off",
+							"error",
+							"warn",
+							"info",
 							"debug"
 						],
 						"enumDescriptions": [
 							"Logs nothing",
 							"Logs only errors",
-							"Logs all errors, warnings, and messages",
-							"Logs all errors, warnings, and messages with extra context useful for debugging"
+							"Logs errors and warnings",
+							"Logs errors, warnings, and messages",
+							"Logs verbose errors, warnings, and messages. Best for issue reporting."
 						],
 						"markdownDescription": "Specifies how much (if any) output will be sent to the _Restore Editors_ output channel",
 						"scope": "window",
-						"order": 40
+						"order": 10
 					}
 				}
 			}
@@ -341,21 +344,23 @@
 		"build": "webpack --mode development",
 		"bundle": "webpack --mode production",
 		"clean": "npx rimraf dist out .vscode-test .vscode-test-web .eslintcache* tsconfig*.tsbuildinfo",
-		"lint": "eslint \"src/**/*.ts?(x)\" --fix",
+		"lint": "eslint \"src/**/*.ts?(x)\"",
 		"package": "vsce package --yarn",
 		"package-pre": "yarn run patch-pre && yarn run package --pre-release",
 		"patch-pre": "node ./scripts/applyPreReleasePatch.js",
-		"pretty": "prettier --config .prettierrc --loglevel warn --write .",
+		"prep-release": "node ./scripts/prep-release.js",
+		"pretty": "prettier --config .prettierrc --log-level warn --write .",
+		"pretty:check": "prettier --config .prettierrc --check .",
 		"pub": "vsce publish --yarn",
 		"pub-pre": "vsce publish --yarn --pre-release",
 		"rebuild": "yarn run reset && yarn run build",
 		"reset": "yarn run clean && yarn --frozen-lockfile",
 		"watch": "webpack --watch --mode development",
 		"web": "vscode-test-web --extensionDevelopmentPath=. --folder-uri=vscode-vfs://github/eamodio/vscode-restore-editors",
-		"web:serve": "npx serve --cors -l 5000",
-		"web:tunnel": "npx localtunnel -p 5000",
+		"web:serve": "node -e \"const p = require('path'); const h = require('os').homedir(); require('child_process').execSync('npx serve --cors -l 5000 --ssl-cert '+p.resolve(h, 'certs/localhost.pem')+' --ssl-key '+p.resolve(h, 'certs/localhost-key.pem'), { stdio: 'inherit' })\"",
 		"update-dts": "pushd \"src/@types\" && npx vscode-dts dev && popd",
 		"update-dts:master": "pushd \"src/@types\" && npx vscode-dts master && popd",
+		"update-licenses": "node ./scripts/generateLicenses.mjs",
 		"vscode:prepublish": "yarn run bundle"
 	},
 	"dependencies": {
@@ -364,27 +369,28 @@
 	},
 	"devDependencies": {
 		"@types/node": "16.11.47",
-		"@types/vscode": "1.76.0",
-		"@typescript-eslint/eslint-plugin": "5.57.1",
-		"@typescript-eslint/parser": "5.57.1",
-		"@vscode/vsce": "2.18.0",
+		"@types/vscode": "1.80.0",
+		"@typescript-eslint/eslint-plugin": "6.12.0",
+		"@typescript-eslint/parser": "6.12.0",
+		"@vscode/vsce": "2.22.0",
 		"circular-dependency-plugin": "5.2.2",
 		"clean-webpack-plugin": "4.0.0",
-		"esbuild": "0.17.15",
-		"esbuild-loader": "3.0.1",
-		"eslint": "8.38.0",
+		"esbuild": "0.19.7",
+		"esbuild-loader": "4.0.2",
+		"eslint": "8.54.0",
 		"eslint-cli": "1.1.1",
-		"eslint-config-prettier": "8.8.0",
-		"eslint-import-resolver-typescript": "3.5.5",
+		"eslint-config-prettier": "9.0.0",
+		"eslint-import-resolver-typescript": "3.6.1",
 		"eslint-plugin-anti-trojan-source": "1.1.1",
-		"eslint-plugin-import": "2.27.5",
+		"eslint-plugin-import": "2.29.0",
 		"fork-ts-checker-webpack-plugin": "6.5.3",
-		"prettier": "2.8.7",
-		"terser-webpack-plugin": "5.3.7",
-		"ts-loader": "9.4.2",
-		"typescript": "5.0.4",
-		"webpack": "5.78.0",
-		"webpack-bundle-analyzer": "4.8.0",
-		"webpack-cli": "5.0.1"
+		"license-checker-rseidelsohn": "4.2.10",
+		"prettier": "3.1.0",
+		"terser-webpack-plugin": "5.3.9",
+		"ts-loader": "9.5.1",
+		"typescript": "5.3.2",
+		"webpack": "5.89.0",
+		"webpack-bundle-analyzer": "4.10.1",
+		"webpack-cli": "5.1.4"
 	}
 }

@@ -1,6 +1,6 @@
 import type { Command, Disposable } from 'vscode';
 import { commands } from 'vscode';
-import type { Commands, CoreCommands, UnqualifiedViewCommands, ViewIds } from '../constants';
+import type { Commands, CoreCommands, TreeViewIds, UnqualifiedViewCommands } from '../constants';
 
 export function registerCommand<T extends keyof Commands>(
 	command: T,
@@ -10,7 +10,7 @@ export function registerCommand<T extends keyof Commands>(
 	return commands.registerCommand(command, callback, thisArg);
 }
 
-export function registerViewCommand<T extends ViewIds, C extends UnqualifiedViewCommands>(
+export function registerViewCommand<T extends TreeViewIds, C extends UnqualifiedViewCommands>(
 	id: T,
 	command: C,
 	callback: (...args: Commands[`${T}.${C}`]) => unknown,
@@ -27,7 +27,7 @@ export function createCommand<T extends keyof Commands>(command: T, title: strin
 	};
 }
 
-export function createViewCommand<T extends ViewIds, C extends UnqualifiedViewCommands>(
+export function createViewCommand<T extends TreeViewIds, C extends UnqualifiedViewCommands>(
 	id: T,
 	command: C,
 	...args: Commands[`${T}.${C}`]

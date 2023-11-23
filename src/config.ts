@@ -1,26 +1,23 @@
-import { LogLevel } from './system/logger.constants';
+import type { LogLevel } from './system/logger.constants';
 
-export enum OutputLevel {
-	Silent = 'silent',
-	Errors = 'errors',
-	Verbose = 'verbose',
-	Debug = 'debug',
-}
+type DeprecatedOutputLevel =
+	| /** @deprecated use `off` */ 'silent'
+	| /** @deprecated use `error` */ 'errors'
+	| /** @deprecated use `info` */ 'verbose';
+export type OutputLevel = LogLevel | DeprecatedOutputLevel;
 
 export interface Config {
 	outputLevel: OutputLevel;
 }
 
-export function fromOutputLevel(level: LogLevel | OutputLevel): LogLevel {
+export function fromOutputLevel(level: OutputLevel): LogLevel {
 	switch (level) {
-		case OutputLevel.Silent:
-			return LogLevel.Off;
-		case OutputLevel.Errors:
-			return LogLevel.Error;
-		case OutputLevel.Verbose:
-			return LogLevel.Info;
-		case OutputLevel.Debug:
-			return LogLevel.Debug;
+		case /** @deprecated use `off` */ 'silent':
+			return 'off';
+		case /** @deprecated use `error` */ 'errors':
+			return 'error';
+		case /** @deprecated use `info` */ 'verbose':
+			return 'info';
 		default:
 			return level;
 	}

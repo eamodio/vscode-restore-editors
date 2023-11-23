@@ -3,7 +3,6 @@ import { window } from 'vscode';
 import type { Commands, UnqualifiedPaletteCommands } from '../../constants';
 import { extensionPrefix } from '../../constants';
 import { Logger } from '../logger';
-import { LogLevel } from '../logger.constants';
 
 type CommandCallback<T extends keyof Commands> = (this: any, ...args: Commands[T]) => any;
 
@@ -44,7 +43,7 @@ function _command<T extends UnqualifiedPaletteCommands>(
 					Logger.error(ex);
 
 					if (options?.showErrorMessage) {
-						if (Logger.enabled(LogLevel.Error)) {
+						if (Logger.enabled('error')) {
 							const actions: MessageItem[] = [{ title: 'Open Output Channel' }];
 
 							const result = await window.showErrorMessage(

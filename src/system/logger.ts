@@ -1,7 +1,5 @@
-import { LogLevel } from './logger.constants';
+import type { LogLevel } from './logger.constants';
 import type { LogScope } from './logger.scope';
-
-const emptyStr = '';
 
 const enum OrderedLevel {
 	Off = 0,
@@ -45,7 +43,7 @@ export const Logger = new (class Logger {
 	}
 
 	private level: OrderedLevel = OrderedLevel.Off;
-	private _logLevel: LogLevel = LogLevel.Off;
+	private _logLevel: LogLevel = 'off';
 	get logLevel(): LogLevel {
 		return this._logLevel;
 	}
@@ -53,7 +51,7 @@ export const Logger = new (class Logger {
 		this._logLevel = value;
 		this.level = toOrderedLevel(this._logLevel);
 
-		if (value === LogLevel.Off) {
+		if (value === 'off') {
 			this.output?.dispose?.();
 			this.output = undefined;
 		} else {
@@ -77,16 +75,16 @@ export const Logger = new (class Logger {
 			message = params.shift();
 
 			if (scopeOrMessage != null) {
-				message = `${scopeOrMessage.prefix} ${message ?? emptyStr}`;
+				message = `${scopeOrMessage.prefix} ${message ?? ''}`;
 			}
 		}
 
 		if (this.isDebugging) {
-			console.log(this.timestamp, `[${this.provider!.name}]`, message ?? emptyStr, ...params);
+			console.log(this.timestamp, `[${this.provider!.name}]`, message ?? '', ...params);
 		}
 
 		if (this.output == null || this.level < OrderedLevel.Debug) return;
-		this.output.appendLine(`${this.timestamp} ${message ?? emptyStr}${this.toLoggableParams(true, params)}`);
+		this.output.appendLine(`${this.timestamp} ${message ?? ''}${this.toLoggableParams(true, params)}`);
 	}
 
 	error(ex: Error | unknown, message?: string, ...params: any[]): void;
@@ -98,7 +96,7 @@ export const Logger = new (class Logger {
 		if (scopeOrMessage == null || typeof scopeOrMessage === 'string') {
 			message = scopeOrMessage;
 		} else {
-			message = `${scopeOrMessage.prefix} ${params.shift() ?? emptyStr}`;
+			message = `${scopeOrMessage.prefix} ${params.shift() ?? ''}`;
 		}
 
 		if (message == null) {
@@ -112,12 +110,18 @@ export const Logger = new (class Logger {
 		}
 
 		if (this.isDebugging) {
-			console.error(this.timestamp, `[${this.provider!.name}]`, message ?? emptyStr, ...params, ex);
+			if (ex != null) {
+				console.error(this.timestamp, `[${this.provider!.name}]`, message ?? '', ...params, ex);
+			} else {
+				console.error(this.timestamp, `[${this.provider!.name}]`, message ?? '', ...params);
+			}
 		}
 
 		if (this.output == null || this.level < OrderedLevel.Error) return;
 		this.output.appendLine(
-			`${this.timestamp} ${message ?? emptyStr}${this.toLoggableParams(false, params)}\n${String(ex)}`,
+			`${this.timestamp} ${message ?? ''}${this.toLoggableParams(false, params)}${
+				ex != null ? `\n${String(ex)}` : ''
+			}`,
 		);
 	}
 
@@ -133,16 +137,16 @@ export const Logger = new (class Logger {
 			message = params.shift();
 
 			if (scopeOrMessage != null) {
-				message = `${scopeOrMessage.prefix} ${message ?? emptyStr}`;
+				message = `${scopeOrMessage.prefix} ${message ?? ''}`;
 			}
 		}
 
 		if (this.isDebugging) {
-			console.log(this.timestamp, `[${this.provider!.name}]`, message ?? emptyStr, ...params);
+			console.log(this.timestamp, `[${this.provider!.name}]`, message ?? '', ...params);
 		}
 
 		if (this.output == null || this.level < OrderedLevel.Info) return;
-		this.output.appendLine(`${this.timestamp} ${message ?? emptyStr}${this.toLoggableParams(false, params)}`);
+		this.output.appendLine(`${this.timestamp} ${message ?? ''}${this.toLoggableParams(false, params)}`);
 	}
 
 	warn(message: string, ...params: any[]): void;
@@ -157,24 +161,28 @@ export const Logger = new (class Logger {
 			message = params.shift();
 
 			if (scopeOrMessage != null) {
-				message = `${scopeOrMessage.prefix} ${message ?? emptyStr}`;
+				message = `${scopeOrMessage.prefix} ${message ?? ''}`;
 			}
 		}
 
 		if (this.isDebugging) {
-			console.warn(this.timestamp, `[${this.provider!.name}]`, message ?? emptyStr, ...params);
+			console.warn(this.timestamp, `[${this.provider!.name}]`, message ?? '', ...params);
 		}
 
 		if (this.output == null || this.level < OrderedLevel.Warn) return;
-		this.output.appendLine(`${this.timestamp} ${message ?? emptyStr}${this.toLoggableParams(false, params)}`);
+		this.output.appendLine(`${this.timestamp} ${message ?? ''}${this.toLoggableParams(false, params)}`);
 	}
 
 	showOutputChannel(preserveFocus?: boolean): void {
 		this.output?.show?.(preserveFocus);
 	}
 
-	toLoggable(o: any, sanitize?: ((key: string, value: any) => any) | undefined) {
+	toLoggable(o: any, sanitize?: ((key: string, value: any) => any) | undefined): string {
 		if (typeof o !== 'object') return String(o);
+
+		if (Array.isArray(o)) {
+			return `[${o.map(i => this.toLoggable(i, sanitize)).join(', ')}]`;
+		}
 
 		const loggable = this.provider!.toLoggable?.(o);
 		if (loggable != null) return loggable;
@@ -188,25 +196,25 @@ export const Logger = new (class Logger {
 
 	private toLoggableParams(debugOnly: boolean, params: any[]) {
 		if (params.length === 0 || (debugOnly && this.level < OrderedLevel.Debug && !this.isDebugging)) {
-			return emptyStr;
+			return '';
 		}
 
 		const loggableParams = params.map(p => this.toLoggable(p)).join(', ');
-		return loggableParams.length !== 0 ? ` \u2014 ${loggableParams}` : emptyStr;
+		return loggableParams.length !== 0 ? ` \u2014 ${loggableParams}` : '';
 	}
 })();
 
 function toOrderedLevel(logLevel: LogLevel): OrderedLevel {
 	switch (logLevel) {
-		case LogLevel.Off:
+		case 'off':
 			return OrderedLevel.Off;
-		case LogLevel.Error:
+		case 'error':
 			return OrderedLevel.Error;
-		case LogLevel.Warn:
+		case 'warn':
 			return OrderedLevel.Warn;
-		case LogLevel.Info:
+		case 'info':
 			return OrderedLevel.Info;
-		case LogLevel.Debug:
+		case 'debug':
 			return OrderedLevel.Debug;
 		default:
 			return OrderedLevel.Off;
@@ -218,9 +226,9 @@ export function getLoggableName(instance: Function | object) {
 	if (typeof instance === 'function') {
 		if (instance.prototype?.constructor == null) return instance.name;
 
-		name = instance.prototype.constructor.name ?? emptyStr;
+		name = instance.prototype.constructor.name ?? '';
 	} else {
-		name = instance.constructor?.name ?? emptyStr;
+		name = instance.constructor?.name ?? '';
 	}
 
 	// Strip webpack module name (since I never name classes with an _)
@@ -234,16 +242,16 @@ export interface LogProvider {
 }
 
 export const defaultLogProvider: LogProvider = {
-	enabled: (logLevel: LogLevel) => Logger.enabled(logLevel),
+	enabled: (logLevel: LogLevel) => Logger.enabled(logLevel) || Logger.isDebugging,
 	log: (logLevel: LogLevel, scope: LogScope | undefined, message: string, ...params: any[]) => {
 		switch (logLevel) {
-			case LogLevel.Error:
+			case 'error':
 				Logger.error('', scope, message, ...params);
 				break;
-			case LogLevel.Warn:
+			case 'warn':
 				Logger.warn(scope, message, ...params);
 				break;
-			case LogLevel.Info:
+			case 'info':
 				Logger.log(scope, message, ...params);
 				break;
 			default:

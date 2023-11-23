@@ -1,13 +1,20 @@
 import type { CancellationToken, Disposable } from 'vscode';
 
 export class PromiseCancelledError<T extends Promise<any> = Promise<any>> extends Error {
-	constructor(public readonly promise: T, message: string) {
+	constructor(
+		public readonly promise: T,
+		message: string,
+	) {
 		super(message);
 	}
 }
 
 export class PromiseCancelledErrorWithId<TKey, T extends Promise<any> = Promise<any>> extends PromiseCancelledError<T> {
-	constructor(public readonly id: TKey, promise: T, message: string) {
+	constructor(
+		public readonly id: TKey,
+		promise: T,
+		message: string,
+	) {
 		super(promise, message);
 	}
 }

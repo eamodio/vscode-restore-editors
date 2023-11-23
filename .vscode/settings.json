@@ -1,8 +1,7 @@
 {
 	"editor.codeActionsOnSave": {
-		"source.fixAll.eslint": true
+		"source.fixAll.eslint": "explicit"
 	},
-	"eslint.packageManager": "yarn",
 	"files.associations": {
 		".eslintrc*.json": "jsonc"
 	},
@@ -12,32 +11,6 @@
 	},
 	"files.insertFinalNewline": true,
 	"files.trimTrailingWhitespace": true,
-	"githubIssues.queries": [
-		{
-			"label": "Triage",
-			"query": "state:open repo:${owner}/${repository} label:triage sort:updated-desc"
-		},
-		{
-			"label": "Current",
-			"query": "state:open repo:${owner}/${repository} milestone:\"January 2023\" sort:updated-desc"
-		},
-		{
-			"label": "Soon™",
-			"query": "state:open repo:${owner}/${repository} milestone:Soon™ sort:updated-desc"
-		},
-		{
-			"label": "Verify",
-			"query": "state:closed repo:${owner}/${repository} -milestone:Shipped label:pending-release label:needs-verification sort:updated-desc"
-		},
-		{
-			"label": "Pending Release",
-			"query": "state:closed repo:${owner}/${repository} label:pending-release sort:updated-desc"
-		},
-		{
-			"label": "All",
-			"query": "state:open repo:${owner}/${repository} sort:updated-desc"
-		}
-	],
 	"[html][javascript][json][jsonc][markdown][scss][svg][typescript][typescriptreact]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},

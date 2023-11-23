@@ -96,7 +96,6 @@ export function debounce<T extends (...args: any[]) => ReturnType<T>>(fn: T, wai
 }
 
 const comma = ',';
-const emptyStr = '';
 const equals = '=';
 const openBrace = '{';
 const openParen = '(';
@@ -112,7 +111,7 @@ export function getParameters(fn: Function): string[] {
 	if (fn.length === 0) return [];
 
 	let fnBody: string = Function.prototype.toString.call(fn);
-	fnBody = fnBody.replace(fnBodyStripCommentsRegex, emptyStr) || fnBody;
+	fnBody = fnBody.replace(fnBodyStripCommentsRegex, '') || fnBody;
 	fnBody = fnBody.slice(0, fnBody.indexOf(openBrace));
 
 	let open = fnBody.indexOf(openParen);
@@ -126,7 +125,7 @@ export function getParameters(fn: Function): string[] {
 
 	const match = fnBodyRegex.exec(fnBody);
 	return match != null
-		? match[1].split(comma).map(param => param.trim().replace(fnBodyStripParamDefaultValueRegex, emptyStr))
+		? match[1].split(comma).map(param => param.trim().replace(fnBodyStripParamDefaultValueRegex, ''))
 		: [];
 }
 
@@ -139,3 +138,19 @@ export function is<T extends object>(o: object, propOrMatcher?: keyof T | ((o: a
 
 	return value === undefined ? (o as any)[propOrMatcher] !== undefined : (o as any)[propOrMatcher] === value;
 }
+
+export function once<T extends (...args: any[]) => any>(fn: T): T {
+	let result: ReturnType<T>;
+	let called = false;
+
+	return function (this: any, ...args: Parameters<T>): ReturnType<T> {
+		if (!called) {
+			called = true;
+			result = fn.apply(this, args);
+			fn = undefined!;
+		}
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+		return result;
+	} as T;
+}
+

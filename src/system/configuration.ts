@@ -59,6 +59,7 @@ export class Configuration {
 		section: S,
 		scope: ConfigurationScope | null | undefined,
 		defaultValue: NonNullable<ConfigPathValue<S>>,
+		skipOverrides?: boolean,
 	): NonNullable<ConfigPathValue<S>>;
 	get<S extends ConfigPath>(
 		section: S,
@@ -208,7 +209,7 @@ export class Configuration {
 
 		const toInspection = this.inspect(to);
 		if (fromInspection.globalValue !== undefined) {
-			if (toInspection === undefined || toInspection.globalValue === undefined) {
+			if (toInspection?.globalValue === undefined) {
 				await this.update(
 					to,
 					options.migrationFn != null
@@ -227,7 +228,7 @@ export class Configuration {
 		}
 
 		if (fromInspection.workspaceValue !== undefined) {
-			if (toInspection === undefined || toInspection.workspaceValue === undefined) {
+			if (toInspection?.workspaceValue === undefined) {
 				await this.update(
 					to,
 					options.migrationFn != null
@@ -246,7 +247,7 @@ export class Configuration {
 		}
 
 		if (fromInspection.workspaceFolderValue !== undefined) {
-			if (toInspection === undefined || toInspection.workspaceFolderValue === undefined) {
+			if (toInspection?.workspaceFolderValue === undefined) {
 				await this.update(
 					to,
 					options.migrationFn != null
@@ -337,8 +338,8 @@ export type PathValue<T, P extends Path<T>> = P extends `${infer Key}.${infer Re
 			: never
 		: never
 	: P extends keyof T
-	? T[P]
-	: never;
+	  ? T[P]
+	  : never;
 
 export type ConfigPath = Path<Config>;
 export type ConfigPathValue<P extends ConfigPath> = PathValue<Config, P>;

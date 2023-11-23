@@ -1,4 +1,4 @@
-import type { ConfigurationChangeEvent, ExtensionContext } from 'vscode';
+import type { ConfigurationChangeEvent, Disposable, ExtensionContext } from 'vscode';
 import { ExtensionMode } from 'vscode';
 import { CommandProvider } from './commands';
 import { fromOutputLevel } from './config';
@@ -8,7 +8,7 @@ import { memoize } from './system/decorators/memoize';
 import { Keyboard } from './system/keyboard';
 import { Logger } from './system/logger';
 import { Storage } from './system/storage';
-import { LayoutsView } from './views/layoutsView';
+import { LayoutsView } from './views/layouts/layoutsView';
 
 export class Container {
 	static #instance: Container | undefined;
@@ -26,10 +26,10 @@ export class Container {
 		},
 	});
 
-	static create(context: ExtensionContext) {
+	static create(context: ExtensionContext, prerelease: boolean, version: string) {
 		if (Container.#instance != null) throw new Error('Container is already initialized');
 
-		Container.#instance = new Container(context);
+		Container.#instance = new Container(context, prerelease, version);
 		return Container.#instance;
 	}
 
@@ -37,10 +37,12 @@ export class Container {
 		return Container.#instance ?? Container.#proxy;
 	}
 
-	private constructor(context: ExtensionContext) {
+	private constructor(context: ExtensionContext, prerelease: boolean, version: string) {
 		this._context = context;
+		this._prerelease = prerelease;
+		this._version = version;
 
-		const disposables = [
+		const disposables: Disposable[] = [
 			(this._storage = new Storage(context)),
 			(this._keyboard = new Keyboard()),
 			(this._layoutManager = new LayoutManager(this, this._storage)),
@@ -50,13 +52,11 @@ export class Container {
 		];
 
 		context.subscriptions.push({
-			dispose: function () {
-				disposables.reverse().forEach(d => void d.dispose());
-			},
+			dispose: () => disposables.reverse().forEach(d => void d.dispose()),
 		});
 	}
 
-	private _context: ExtensionContext;
+	private readonly _context: ExtensionContext;
 	get context() {
 		return this._context;
 	}
@@ -66,19 +66,34 @@ export class Container {
 		return this._context.extensionMode === ExtensionMode.Development;
 	}
 
-	private _keyboard: Keyboard;
+	private readonly _keyboard: Keyboard;
 	get keyboard() {
 		return this._keyboard;
 	}
 
-	private _layoutManager: LayoutManager;
+	private readonly _prerelease;
+	get prerelease() {
+		return this._prerelease;
+	}
+
+	@memoize()
+	get prereleaseOrDebugging() {
+		return this._prerelease || this.debugging;
+	}
+
+	private readonly _layoutManager: LayoutManager;
 	get layoutManager() {
 		return this._layoutManager;
 	}
 
-	private _storage: Storage;
+	private readonly _storage: Storage;
 	get storage() {
 		return this._storage;
+	}
+
+	private readonly _version: string;
+	get version(): string {
+		return this._version;
 	}
 
 	private onAnyConfigurationChanged(e: ConfigurationChangeEvent) {
