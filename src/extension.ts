@@ -29,7 +29,7 @@ export function activate(context: ExtensionContext) {
 						}', logLevel='${logLevel}'`,
 					);
 					channel.appendLine(
-						'To enable debug logging, set `"gitlens.outputLevel: "debug"` or run "GitLens: Enable Debug Logging" from the Command Palette',
+						'To enable debug logging, set `"restoreEditors.outputLevel: "debug"` or run "Restore Editors: Enable Debug Logging" from the Command Palette',
 					);
 				}
 				return channel;

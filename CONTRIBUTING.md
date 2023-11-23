@@ -184,9 +184,9 @@ Use the [prep-release](scripts/prep-release.js) script to prepare a new release.
 3. Review the `Bumps to v<major.minor.patch>` commit
 4. Run `git push --follow-tags` to push the commit and tag
 
-Pushing the `v<major.minor.patch>` tag will trigger the [Publish Stable workflow](.github/workflows/cd-stable.yml) to automatically package the extension, create a [GitHub release](https://github.com/gitkraken/vscode-gitlens/releases/latest), and deploy it to the [VS Marketplace](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens).
+Pushing the `v<major.minor.patch>` tag will trigger the [Publish Stable workflow](.github/workflows/cd-stable.yml) to automatically package the extension, create a [GitHub release](https://github.com/eamodio/vscode-restore-editors/releases/latest), and deploy it to the [VS Marketplace](https://marketplace.visualstudio.com/items?itemName=amodio.restore-editors).
 
-If the action fails and retries are unsuccessful, the VSIX can be built locally with `yarn package` and uploaded manually to the marketplace. A GitHub release can also be [created manually](https://github.com/gitkraken/vscode-gitlens/releases/new) using `v<major.minor.patch>` as the title and the notes from the [CHANGELOG.md](CHANGELOG.md) with the VSIX attached.
+If the action fails and retries are unsuccessful, the VSIX can be built locally with `yarn package` and uploaded manually to the marketplace. A GitHub release can also be [created manually](https://github.com/eamodio/vscode-restore-editors/releases/new) using `v<major.minor.patch>` as the title and the notes from the [CHANGELOG.md](CHANGELOG.md) with the VSIX attached.
 
 ### Pre-releases
 
