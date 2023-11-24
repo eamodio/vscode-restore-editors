@@ -207,6 +207,11 @@
     wrap-ansi "^8.1.0"
     wrap-ansi-cjs "npm:wrap-ansi@^7.0.0"
 
+"@jgoz/esbuild-plugin-typecheck@3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@jgoz/esbuild-plugin-typecheck/-/esbuild-plugin-typecheck-3.1.0.tgz#a53e007546f0d1d951a4c5f527fea5af6f0997d3"
+  integrity sha512-4kXVwi3Sl5d8oIeSeiLzszzH6/AJVrqq7Q2Iw4IswGXqmN8QPgk4FYhfmBE3KlblZORmGr4/QfXaUHg1pHyaLA==
+
 "@jridgewell/gen-mapping@^0.3.0":
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/@jridgewell/gen-mapping/-/gen-mapping-0.3.3.tgz#7e02e6eb5df901aaedb08514203b096614024098"
@@ -284,6 +289,79 @@
   version "1.0.0-next.23"
   resolved "https://registry.yarnpkg.com/@polka/url/-/url-1.0.0-next.23.tgz#498e41218ab3b6a1419c735e5c6ae2c5ed609b6c"
   integrity sha512-C16M+IYz0rgRhWZdCmK+h58JMv8vijAA61gmz2rspCSwKwzBebpdcsiUmwrtJRdphuY30i6BSLEOP8ppbNLyLg==
+
+"@swc/core-darwin-arm64@1.3.99":
+  version "1.3.99"
+  resolved "https://registry.yarnpkg.com/@swc/core-darwin-arm64/-/core-darwin-arm64-1.3.99.tgz#def204349ac645b8de21a800fa784907642a6c91"
+  integrity sha512-Qj7Jct68q3ZKeuJrjPx7k8SxzWN6PqLh+VFxzA+KwLDpQDPzOlKRZwkIMzuFjLhITO4RHgSnXoDk/Syz0ZeN+Q==
+
+"@swc/core-darwin-x64@1.3.99":
+  version "1.3.99"
+  resolved "https://registry.yarnpkg.com/@swc/core-darwin-x64/-/core-darwin-x64-1.3.99.tgz#2633f1ac1668ec569f34f86eb5250d56fcacd952"
+  integrity sha512-wR7m9QVJjgiBu1PSOHy7s66uJPa45Kf9bZExXUL+JAa9OQxt5y+XVzr+n+F045VXQOwdGWplgPnWjgbUUHEVyw==
+
+"@swc/core-linux-arm64-gnu@1.3.99":
+  version "1.3.99"
+  resolved "https://registry.yarnpkg.com/@swc/core-linux-arm64-gnu/-/core-linux-arm64-gnu-1.3.99.tgz#871c2f049a3a5d88bcc7317ac004230517a08ba4"
+  integrity sha512-gcGv1l5t0DScEONmw5OhdVmEI/o49HCe9Ik38zzH0NtDkc+PDYaCcXU5rvfZP2qJFaAAr8cua8iJcOunOSLmnA==
+
+"@swc/core-linux-arm64-musl@1.3.99":
+  version "1.3.99"
+  resolved "https://registry.yarnpkg.com/@swc/core-linux-arm64-musl/-/core-linux-arm64-musl-1.3.99.tgz#28ed1622e92bc13aab4b650f2af695af8695289b"
+  integrity sha512-XL1/eUsTO8BiKsWq9i3iWh7H99iPO61+9HYiWVKhSavknfj4Plbn+XyajDpxsauln5o8t+BRGitymtnAWJM4UQ==
+
+"@swc/core-linux-x64-gnu@1.3.99":
+  version "1.3.99"
+  resolved "https://registry.yarnpkg.com/@swc/core-linux-x64-gnu/-/core-linux-x64-gnu-1.3.99.tgz#8e07add9cc8b76d542959e3240340effa6c6e446"
+  integrity sha512-fGrXYE6DbTfGNIGQmBefYxSk3rp/1lgbD0nVg4rl4mfFRQPi7CgGhrrqSuqZ/ezXInUIgoCyvYGWFSwjLXt/Qg==
+
+"@swc/core-linux-x64-musl@1.3.99":
+  version "1.3.99"
+  resolved "https://registry.yarnpkg.com/@swc/core-linux-x64-musl/-/core-linux-x64-musl-1.3.99.tgz#677eb82d6862605cb0a81ec5b732bef2a9861b16"
+  integrity sha512-kvgZp/mqf3IJ806gUOL6gN6VU15+DfzM1Zv4Udn8GqgXiUAvbQehrtruid4Snn5pZTLj4PEpSCBbxgxK1jbssA==
+
+"@swc/core-win32-arm64-msvc@1.3.99":
+  version "1.3.99"
+  resolved "https://registry.yarnpkg.com/@swc/core-win32-arm64-msvc/-/core-win32-arm64-msvc-1.3.99.tgz#6c9bf96dd4cb81b5960884906766dc47a49efb0d"
+  integrity sha512-yt8RtZ4W/QgFF+JUemOUQAkVW58cCST7mbfKFZ1v16w3pl3NcWd9OrtppFIXpbjU1rrUX2zp2R7HZZzZ2Zk/aQ==
+
+"@swc/core-win32-ia32-msvc@1.3.99":
+  version "1.3.99"
+  resolved "https://registry.yarnpkg.com/@swc/core-win32-ia32-msvc/-/core-win32-ia32-msvc-1.3.99.tgz#6940a602b65137eee30f09ced7cd9fcb6e162b88"
+  integrity sha512-62p5fWnOJR/rlbmbUIpQEVRconICy5KDScWVuJg1v3GPLBrmacjphyHiJC1mp6dYvvoEWCk/77c/jcQwlXrDXw==
+
+"@swc/core-win32-x64-msvc@1.3.99":
+  version "1.3.99"
+  resolved "https://registry.yarnpkg.com/@swc/core-win32-x64-msvc/-/core-win32-x64-msvc-1.3.99.tgz#7fcdfe6577f015604f7e69f71dda99822e946385"
+  integrity sha512-PdppWhkoS45VGdMBxvClVgF1hVjqamtvYd82Gab1i4IV45OSym2KinoDCKE1b6j3LwBLOn2J9fvChGSgGfDCHQ==
+
+"@swc/core@^1.3.99":
+  version "1.3.99"
+  resolved "https://registry.yarnpkg.com/@swc/core/-/core-1.3.99.tgz#24a2ff0aaa1096b31046c8099b043936db0c4ca6"
+  integrity sha512-8O996RfuPC4ieb4zbYMfbyCU9k4gSOpyCNnr7qBQ+o7IEmh8JCV6B8wwu+fT/Om/6Lp34KJe1IpJ/24axKS6TQ==
+  dependencies:
+    "@swc/counter" "^0.1.1"
+    "@swc/types" "^0.1.5"
+  optionalDependencies:
+    "@swc/core-darwin-arm64" "1.3.99"
+    "@swc/core-darwin-x64" "1.3.99"
+    "@swc/core-linux-arm64-gnu" "1.3.99"
+    "@swc/core-linux-arm64-musl" "1.3.99"
+    "@swc/core-linux-x64-gnu" "1.3.99"
+    "@swc/core-linux-x64-musl" "1.3.99"
+    "@swc/core-win32-arm64-msvc" "1.3.99"
+    "@swc/core-win32-ia32-msvc" "1.3.99"
+    "@swc/core-win32-x64-msvc" "1.3.99"
+
+"@swc/counter@^0.1.1":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@swc/counter/-/counter-0.1.2.tgz#bf06d0770e47c6f1102270b744e17b934586985e"
+  integrity sha512-9F4ys4C74eSTEUNndnER3VJ15oru2NumfQxS8geE+f3eB5xvfxpWyqE5XlVnxb/R14uoXi6SLbBwwiDSkv+XEw==
+
+"@swc/types@^0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@swc/types/-/types-0.1.5.tgz#043b731d4f56a79b4897a3de1af35e75d56bc63a"
+  integrity sha512-myfUej5naTBWnqOCc/MdVOLVjXUXtIA+NpDrDBKJtLLg2shUjBu3cZmB/85RyitKc55+lUUyl7oRfLOvkr2hsw==
 
 "@types/eslint-scope@^3.7.3":
   version "3.7.7"
@@ -1433,6 +1511,18 @@ esbuild-loader@4.0.2:
     get-tsconfig "^4.7.0"
     loader-utils "^2.0.4"
     webpack-sources "^1.4.3"
+
+esbuild-plugin-eslint@0.3.7:
+  version "0.3.7"
+  resolved "https://registry.yarnpkg.com/esbuild-plugin-eslint/-/esbuild-plugin-eslint-0.3.7.tgz#617713a99ba58c2e8e890906a341ea0808375a24"
+  integrity sha512-PaxOp5Pd3bgYp26eVIvkjE+Lg2K9cORVIL3Sj1cgjtN8anAVTjKZI5plqH17aK4BYQ9Jeafm5tSBw0OlQJ2Kew==
+
+esbuild-plugin-swc-minify@1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/esbuild-plugin-swc-minify/-/esbuild-plugin-swc-minify-1.0.3.tgz#127b0b1deb6bdf707af6f48b993099686e2e6012"
+  integrity sha512-T6k8izsjOPebwj9nDk/1VEr4dDnqHT2Jw+WGF72IxwyEf99HNHzFAwqJ6paIvN7SSiYnjbSkihFUq8f5XSBJBQ==
+  dependencies:
+    "@swc/core" "^1.3.99"
 
 esbuild@0.19.7, esbuild@^0.19.0:
   version "0.19.7"
@@ -3461,6 +3551,7 @@ spdx-satisfies@^5.0.1:
     spdx-ranges "^2.0.0"
 
 "string-width-cjs@npm:string-width@^4.2.0", string-width@^4.1.0:
+  name string-width-cjs
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
