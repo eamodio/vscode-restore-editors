@@ -1,4 +1,4 @@
-import type { Disposable, Event } from 'vscode';
+import type { Disposable, Event, NotebookEditor, TextEdit, TextEditor, Uri, ViewColumn } from 'vscode';
 import {
 	EventEmitter,
 	extensions,
@@ -381,7 +381,7 @@ export class LayoutManager implements Disposable {
 				for (const t of data.tabs) {
 					if (t.type === 'terminal' || t.type === 'webview') continue;
 
-					t.selection = selectionMap.get(t.uri);
+					t.selection = selectionMap.get(getSelectionMapKey(t.uri, t.column));
 				}
 			}
 
@@ -451,7 +451,7 @@ function updateSelectionMap(map: Map<string, StoredTabSelection>) {
 	for (const e of [window.activeTextEditor, ...window.visibleTextEditors]) {
 		if (e == null) continue;
 
-		map.set(e.document.uri.toString(), {
+		map.set(getSelectionMapKey(e.document.uri, e.viewColumn), {
 			start: {
 				line: e.selection.start.line,
 				character: e.selection.start.character,
@@ -466,7 +466,7 @@ function updateSelectionMap(map: Map<string, StoredTabSelection>) {
 	for (const e of [window.activeNotebookEditor, ...window.visibleNotebookEditors]) {
 		if (e == null) continue;
 
-		map.set(e.notebook.uri.toString(), {
+		map.set(getSelectionMapKey(e.notebook.uri, e.viewColumn), {
 			start: {
 				line: e.selection.start,
 				character: 0,
@@ -477,4 +477,8 @@ function updateSelectionMap(map: Map<string, StoredTabSelection>) {
 			},
 		});
 	}
+}
+
+function getSelectionMapKey(uri: Uri | string, column?: ViewColumn) {
+	return `${uri.toString()}|${column}`;
 }
