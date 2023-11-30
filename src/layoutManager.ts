@@ -1,4 +1,4 @@
-import type { Disposable, Event, NotebookEditor, TextEdit, TextEditor, Uri, ViewColumn } from 'vscode';
+import type { Disposable, Event, Uri, ViewColumn } from 'vscode';
 import {
 	EventEmitter,
 	extensions,
